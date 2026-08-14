@@ -1,0 +1,135 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kept-cli"
+version = "0.1.0"
+description = "An evidence ledger for agent-written code: proves, per acceptance criterion, which promises your code actually keeps."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = [
+  "testing",
+  "mutation-testing",
+  "property-based-testing",
+  "requirements",
+  "ears",
+  "traceability",
+  "spec-driven-development",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+# The verification core is deliberately stdlib-only. These dependencies are used
+# by the *adapters* (observation, mutation, test execution) at the edges.
+# There is no model, network client, or API key anywhere in the dependency tree.
+dependencies = [
+  "coverage>=7.6",
+  "libcst>=1.4",
+]
+
+[project.optional-dependencies]
+# Needed to run kept against a pytest project. Kept invokes pytest as a
+# subprocess in the *target* project, so this is a convenience for the bundled
+# fixtures and for kept's own test suite.
+pytest = [
+  "pytest>=8.0",
+  "hypothesis>=6.100",
+]
+mcp = [
+  "mcp>=1.2",
+]
+
+[project.scripts]
+kept = "kept.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "hypothesis>=6.100",
+  "mypy>=1.13",
+  "ruff>=0.8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kept"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # isort
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "UP",   # pyupgrade
+  "ANN",  # flake8-annotations
+  "RET",  # flake8-return
+  "SIM",  # flake8-simplify
+  "PTH",  # flake8-use-pathlib
+  "RUF",  # ruff-specific
+]
+ignore = [
+  "ANN401",  # allow typing.Any in narrow adapter boundaries
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may use assert-heavy style and skip return annotations on test functions.
+"tests/**" = ["ANN201", "ANN001"]
+# Fixtures are intentionally imperfect code under audit; do not lint them.
+"fixtures/**" = ["ALL"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+disallow_any_explicit = false
+files = ["src/kept", "tests"]
+# Fixtures are deliberately flawed sample projects, not part of the tool.
+exclude = "^fixtures/"
+
+[[tool.mypy.overrides]]
+module = ["libcst.*", "coverage.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+  "--strict-markers",
+  "--strict-config",
+  "-ra",
+]
+markers = [
+  "verifies(criterion_id): binds this test to a spec acceptance criterion",
+]
+# Determinism: kept's own ledger runs must be reproducible.
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+# Load-bearing for kept: per-test coverage contexts are how a criterion's
+# covered line set is derived from its bound tests.
+dynamic_context = "test_function"
+source = ["src/kept"]
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "@overload",
+]

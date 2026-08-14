@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------------------
+# HACKATHON RULE COMPLIANCE
+#
+# The .kiro/ directory MUST be committed at the repository root and MUST NOT be
+# excluded by .gitignore or any similar mechanism. The negation below is here
+# deliberately, as a guard against a future careless pattern. Do not remove it.
+# See: hackathon rules, "Kiro Project Files".
+# ---------------------------------------------------------------------------
+!.kiro/
+!.kiro/**
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# Coverage artefacts. Note: kept's *ledger* (.kept/ledger.json) IS committed on
+# purpose, because the repository attests to its own verdicts. Only the raw
+# coverage databases are transient.
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# kept scratch space. The ledger and bindings are committed; the mutation cache
+# and per-run working data are not.
+.kept/cache/
+.kept/runs/
+
+# Editors and OS
+.idea/
+*.swp
+.DS_Store

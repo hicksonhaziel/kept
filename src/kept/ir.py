@@ -1,12 +1,4 @@
-"""The typed intermediate representation for parsed specifications.
-
-Everything downstream of parsing consumes this module and nothing else, so the
-IR is the tool's internal contract. It is immutable: all types are frozen and
-slotted, and sequence fields are tuples so values stay hashable and ordering is
-explicit rather than incidental.
-
-This module performs no I/O and reads no clock. It imports only `kept.ids`.
-"""
+"""The typed intermediate representation. Immutable, no I/O, no clock."""
 
 from __future__ import annotations
 
@@ -27,12 +19,6 @@ from kept.ids import (
 
 
 class EarsPattern(StrEnum):
-    """The EARS pattern a criterion follows.
-
-    Derived from the clause list after parsing rather than decided during it, so
-    classification is a pure function that can be tested without a parser.
-    """
-
     UBIQUITOUS = "ubiquitous"
     EVENT_DRIVEN = "event_driven"
     STATE_DRIVEN = "state_driven"
@@ -42,8 +28,6 @@ class EarsPattern(StrEnum):
 
 
 class ClauseKind(StrEnum):
-    """What a leading clause contributes to the criterion."""
-
     TRIGGER = "trigger"  # WHEN
     STATE = "state"  # WHILE
     UNWANTED = "unwanted"  # IF
@@ -51,8 +35,6 @@ class ClauseKind(StrEnum):
 
 
 class Modality(StrEnum):
-    """The obligation the criterion places on the implementation."""
-
     SHALL = "SHALL"
     SHALL_NOT = "SHALL NOT"
     SHOULD = "SHOULD"
@@ -63,19 +45,15 @@ class Modality(StrEnum):
 
 
 class LogicalOperator(StrEnum):
-    """The operator joining conjuncts within a clause body."""
-
     AND = "AND"
     OR = "OR"
 
 
-#: Modalities that oblige the implementation, and therefore admit a verdict.
-#: A criterion that does not oblige cannot fairly be called broken (REQ-2.10).
+# Only these oblige the implementation, so only these admit a verdict.
 NORMATIVE_MODALITIES: frozenset[Modality] = frozenset(
     {Modality.SHALL, Modality.SHALL_NOT, Modality.MUST, Modality.MUST_NOT}
 )
 
-#: Which pattern a single leading clause implies.
 _SINGLE_CLAUSE_PATTERNS: dict[ClauseKind, EarsPattern] = {
     ClauseKind.TRIGGER: EarsPattern.EVENT_DRIVEN,
     ClauseKind.STATE: EarsPattern.STATE_DRIVEN,
@@ -85,16 +63,11 @@ _SINGLE_CLAUSE_PATTERNS: dict[ClauseKind, EarsPattern] = {
 
 
 def is_normative(modality: Modality) -> bool:
-    """Whether the modality obliges the implementation (REQ-2.9, REQ-2.10)."""
     return modality in NORMATIVE_MODALITIES
 
 
 def classify_pattern(kinds: Sequence[ClauseKind]) -> EarsPattern:
-    """Classify a criterion from its leading clause kinds alone.
-
-    No clauses is ubiquitous, exactly one maps to that clause's pattern, and two
-    or more is complex (REQ-2.1 through REQ-2.6).
-    """
+    """Classify a criterion from its leading clause kinds alone."""
     if not kinds:
         return EarsPattern.UBIQUITOUS
     if len(kinds) == 1:
@@ -106,11 +79,8 @@ def classify_pattern(kinds: Sequence[ClauseKind]) -> EarsPattern:
 class Span:
     """A character range in a source file.
 
-    Offsets index into the source *file*, not into the extracted criterion text,
-    so a report can point at the exact line of `requirements.md` that made the
-    promise. `source` is always repository-relative with forward slashes, so a
-    span produced on one machine compares cleanly against one produced on
-    another.
+    Offsets index into the source *file*, not into the extracted criterion text.
+    `source` is always repository-relative with forward slashes.
     """
 
     source: str
@@ -126,15 +96,9 @@ class Span:
             raise ValueError(msg)
 
     def shift(self, delta: int) -> Span:
-        """Rebase this span by `delta` characters.
-
-        Used to lift spans produced against an extracted criterion string up
-        into coordinates of the file the criterion came from.
-        """
         return Span(source=self.source, start=self.start + delta, end=self.end + delta)
 
     def slice_of(self, text: str) -> str:
-        """Extract this span's text from the full source contents."""
         return text[self.start : self.end]
 
     def to_dict(self) -> dict[str, Any]:
@@ -143,12 +107,7 @@ class Span:
 
 @dataclass(frozen=True, slots=True)
 class Condition:
-    """The body of a leading clause, with logical structure exposed.
-
-    `conjuncts` holds the phrases joined by an upper-case `AND` or `OR`. A body
-    containing only lower-case conjunctions yields a single conjunct, because
-    lower-case "and" is prose rather than grammar (ADR-0001).
-    """
+    """A clause body. `conjuncts` are the phrases joined by upper-case AND / OR."""
 
     text: str
     conjuncts: tuple[str, ...]
@@ -164,8 +123,6 @@ class Condition:
 
 @dataclass(frozen=True, slots=True)
 class Clause:
-    """One leading clause of a criterion."""
-
     kind: ClauseKind
     condition: Condition
     span: Span
@@ -199,11 +156,10 @@ class Criterion:
 
     @property
     def text(self) -> str:
-        """The criterion as a single line, continuation lines joined (REQ-4.5).
+        """The criterion as a single line.
 
-        `raw_text` is the verbatim source slice, newlines and indentation
-        included, because token offsets are rebased onto it and any tidying would
-        desynchronise the spans. This property is the tidied view for display.
+        `raw_text` stays the verbatim source slice because token offsets rebase
+        onto it; tidying it would desynchronise every span.
         """
         return normalise_text(self.raw_text)
 
@@ -226,8 +182,6 @@ class Criterion:
 
 @dataclass(frozen=True, slots=True)
 class Requirement:
-    """A numbered requirement and the criteria beneath it."""
-
     id: str
     number: int
     criteria: tuple[Criterion, ...]
@@ -254,11 +208,6 @@ class SpecDocument:
 
     @property
     def criteria(self) -> tuple[Criterion, ...]:
-        """Every criterion in the document, ordered by requirement then position.
-
-        Requirements are already stored in order, so this only needs to flatten
-        (REQ-6.2).
-        """
         return tuple(
             criterion for requirement in self.requirements for criterion in requirement.criteria
         )
@@ -289,11 +238,7 @@ def build_criterion(
     raw_text: str,
     span: Span,
 ) -> Criterion:
-    """Assemble a criterion, deriving its identifier, pattern, and hash.
-
-    Centralised so that identity and classification cannot drift apart from each
-    other across call sites.
-    """
+    """Assemble a criterion, deriving its identifier, pattern, and hash together."""
     return Criterion(
         id=criterion_id(requirement_number, position),
         pattern=classify_pattern(tuple(clause.kind for clause in clauses)),
@@ -324,5 +269,5 @@ def build_requirement(
 
 
 def to_json(document: SpecDocument) -> str:
-    """Serialise deterministically: sorted keys, no timestamps (REQ-6.5, REQ-6.6)."""
+    """Serialise deterministically: sorted keys, no timestamps."""
     return json.dumps(document.to_dict(), sort_keys=True, indent=2, ensure_ascii=False)

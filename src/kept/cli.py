@@ -1,15 +1,4 @@
-"""Command-line entry point.
-
-The only module that calls `sys.exit`. Library code raises; this layer decides
-what an exception means for an exit code.
-
-Exit codes are a contract, not an implementation detail:
-
-    0  the requested work succeeded and any gate was satisfied
-    1  a gate was violated (a criterion regressed, or errors were found)
-    2  usage or configuration error
-    3  internal error
-"""
+"""Command-line entry point. The only module that calls `sys.exit`."""
 
 from __future__ import annotations
 
@@ -36,30 +25,22 @@ def build_parser() -> argparse.ArgumentParser:
         prog="kept",
         description=(
             "An evidence ledger for agent-written code. Reports, per acceptance "
-            "criterion, which promises your code actually keeps. Produces "
-            "evidence, not proof."
+            "criterion, which promises your code actually keeps. Evidence, not proof."
         ),
     )
     parser.add_argument("--version", action="version", version=f"kept {__version__}")
-
     subcommands = parser.add_subparsers(dest="command", required=True)
 
     parse_command = subcommands.add_parser(
         "parse",
         help="show the acceptance criteria kept can read, with identifiers and hashes",
-        description=(
-            "Parse specifications and print what was understood. This is a "
-            "diagnostic command: it reaches no verdicts and writes no ledger."
-        ),
+        description="Parse specifications and print what was understood. No verdicts.",
     )
     parse_command.add_argument(
         "path",
         nargs="?",
         type=Path,
-        help=(
-            "a requirements.md file to parse. "
-            "Omit to parse every specification under .kiro/specs"
-        ),
+        help="a requirements.md file. Omit to parse everything under .kiro/specs",
     )
     parse_command.add_argument(
         "--root",
@@ -73,36 +54,30 @@ def build_parser() -> argparse.ArgumentParser:
         dest="as_json",
         help="emit machine-readable JSON with sorted keys",
     )
-    parse_command.add_argument(
-        "--quiet",
-        action="store_true",
-        help="print only the summary line",
-    )
+    parse_command.add_argument("--quiet", action="store_true", help="print only the summary")
     parse_command.set_defaults(handler=_handle_parse)
 
     return parser
 
 
 def _handle_parse(args: argparse.Namespace) -> int:
-    root: Path = args.root
-    stream: TextIO = sys.stdout
-
     try:
         result = (
-            load_document(args.path, root=root) if args.path is not None else load_all(root)
+            load_document(args.path, root=args.root)
+            if args.path is not None
+            else load_all(args.root)
         )
     except SpecNotFoundError as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
 
     if args.as_json:
-        print(_render_json(result), file=stream)
+        print(_render_json(result))
     else:
-        _render_text(result, quiet=args.quiet, stream=stream)
+        _render_text(result, quiet=args.quiet, stream=sys.stdout)
 
-    # Parse errors mean kept could not read a promise it was asked about. That is
-    # a gate violation rather than a crash: the run completed and reported
-    # honestly, but the input needs fixing.
+    # Parse errors mean kept could not read a promise it was asked about: a gate
+    # violation, not a crash.
     return EXIT_GATE_VIOLATED if result.errors else EXIT_OK
 
 
@@ -118,12 +93,12 @@ def _render_json(result: LoadResult) -> str:
 
 def _summary(result: LoadResult) -> dict[str, int]:
     criteria = result.criteria
-    normative = [criterion for criterion in criteria if criterion.is_normative]
+    promises = sum(1 for criterion in criteria if criterion.is_normative)
     return {
         "documents": len(result.documents),
         "criteria": len(criteria),
-        "promises": len(normative),
-        "advisory": len(criteria) - len(normative),
+        "promises": promises,
+        "advisory": len(criteria) - promises,
         "errors": len(result.errors),
         "warnings": len(result.diagnostics) - len(result.errors),
     }
@@ -136,8 +111,7 @@ def _render_text(result: LoadResult, *, quiet: bool, stream: TextIO) -> None:
         for document in result.documents:
             write(f"\n{document.name}  ({document.path})\n")
             for requirement in document.requirements:
-                heading = requirement.title or "(untitled)"
-                write(f"\n  {requirement.id}  {heading}\n")
+                write(f"\n  {requirement.id}  {requirement.title or '(untitled)'}\n")
                 for criterion in requirement.criteria:
                     marker = " " if criterion.is_normative else "~"
                     write(
@@ -172,18 +146,15 @@ def _format_diagnostic(diagnostic: Diagnostic) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    handler = args.handler
+    args = build_parser().parse_args(argv)
     try:
-        return int(handler(args))
+        return int(args.handler(args))
     except KeyboardInterrupt:
         print("kept: interrupted", file=sys.stderr)
         return EXIT_INTERNAL
 
 
 def run() -> None:
-    """Console-script shim so `main` stays testable and returns rather than exits."""
     sys.exit(main())
 
 

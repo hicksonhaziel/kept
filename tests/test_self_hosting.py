@@ -26,9 +26,7 @@ class TestOwnSpecification:
         result = load_document(spec_path(repo_root), root=repo_root)
         assert [d.message for d in result.errors] == []
 
-    def test_every_requirement_has_the_expected_number_of_criteria(
-        self, repo_root: Path
-    ) -> None:
+    def test_every_requirement_has_the_expected_number_of_criteria(self, repo_root: Path) -> None:
         result = load_document(spec_path(repo_root), root=repo_root)
         counts = {r.number: len(r.criteria) for r in result.documents[0].requirements}
         assert counts == EXPECTED_COUNTS

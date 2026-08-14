@@ -39,9 +39,7 @@ class TestPatternClassification:
         assert criterion.pattern is EarsPattern.OPTIONAL_FEATURE
         assert criterion.clauses[0].kind is ClauseKind.FEATURE
 
-    def test_two_or_more_clauses_are_complex_and_keep_source_order(
-        self, parsed: Parsed
-    ) -> None:
+    def test_two_or_more_clauses_are_complex_and_keep_source_order(self, parsed: Parsed) -> None:
         criterion = parsed(
             "WHILE the session is active, WHEN the user clicks save, "
             "THEN the system SHALL persist the draft"
@@ -71,9 +69,7 @@ class TestPatternClassification:
 
 
 class TestResponse:
-    def test_then_is_a_separator_and_is_excluded_from_the_response(
-        self, parsed: Parsed
-    ) -> None:
+    def test_then_is_a_separator_and_is_excluded_from_the_response(self, parsed: Parsed) -> None:
         criterion = parsed("WHEN the cart is empty THEN the system SHALL display a warning")
         assert criterion.subject == "the system"
         assert criterion.predicate == "display a warning"
@@ -91,9 +87,7 @@ class TestResponse:
         assert criterion.subject == ""
         assert criterion.predicate == "display a warning"
 
-    def test_then_is_not_required_when_no_clause_precedes_the_subject(
-        self, parsed: Parsed
-    ) -> None:
+    def test_then_is_not_required_when_no_clause_precedes_the_subject(self, parsed: Parsed) -> None:
         criterion = parsed("THE system SHALL display a warning")
         assert criterion.subject == "THE system"
         assert criterion.predicate == "display a warning"
@@ -103,14 +97,10 @@ class TestResponse:
         assert parsed("the system SHALL stop").subject == "the system"
         assert parsed("the Refund Service SHALL stop").subject == "the Refund Service"
 
-    def test_predicate_punctuation_spacing_is_faithful_to_the_source(
-        self, parsed: Parsed
-    ) -> None:
+    def test_predicate_punctuation_spacing_is_faithful_to_the_source(self, parsed: Parsed) -> None:
         # Text is recovered by slicing the source, not by rejoining tokens, which
         # would produce "token , because".
-        criterion = parsed(
-            "THE system SHALL emit a word token, because prose is not grammar"
-        )
+        criterion = parsed("THE system SHALL emit a word token, because prose is not grammar")
         assert criterion.predicate == "emit a word token, because prose is not grammar"
 
 
@@ -154,9 +144,7 @@ class TestModality:
     def test_the_first_modality_wins_when_the_predicate_contains_another(
         self, parsed: Parsed
     ) -> None:
-        criterion = parsed(
-            "THE system SHALL classify the pattern and SHALL record the clause"
-        )
+        criterion = parsed("THE system SHALL classify the pattern and SHALL record the clause")
         assert criterion.modality is Modality.SHALL
         assert criterion.predicate == "classify the pattern and SHALL record the clause"
 
@@ -189,14 +177,10 @@ class TestConditions:
         assert condition.operator is None
         assert condition.conjuncts == ("the user submits a name and email address",)
 
-    def test_mixed_operators_are_left_unsplit_rather_than_guessed(
-        self, parsed: Parsed
-    ) -> None:
+    def test_mixed_operators_are_left_unsplit_rather_than_guessed(self, parsed: Parsed) -> None:
         # Precedence is genuinely ambiguous here, so the parser refuses to invent
         # a structure the author did not write.
-        criterion = parsed(
-            "WHEN a is set OR b is set AND c is set THEN the system SHALL halt"
-        )
+        criterion = parsed("WHEN a is set OR b is set AND c is set THEN the system SHALL halt")
         condition = criterion.clauses[0].condition
         assert condition.operator is None
         assert condition.conjuncts == ("a is set OR b is set AND c is set",)

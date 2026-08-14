@@ -32,11 +32,21 @@ binding, evidence, ledger, verdict. Do not introduce "requirement" where
 "criterion" is meant, or "check" where "oracle" is meant. The words are the
 product.
 
-## Comments
+## Comments and docstrings
 
-Explain **why**, not what. The reader can see what. Comments earn their place by
-recording a decision, a constraint, or a trap. Anything explaining a
-non-obvious design choice should point at the relevant ADR.
+Keep the code lean. Long rationale belongs in `docs/adr/` and `docs/journal/`,
+not in the middle of a module.
+
+- Module docstring: one or two lines saying what the module is for.
+- Function docstring: one line. Add `Args:` only where a parameter has a
+  non-obvious contract.
+- Inline comments: only where a reader would otherwise "tidy" the code and break
+  it. A comment that restates the line below it is noise.
+- When a design decision needs explaining, write the ADR and point at it in one
+  short line. Do not inline the argument.
+
+The test is whether the file reads like code or like an essay. It should read like
+code.
 
 ## Tests
 

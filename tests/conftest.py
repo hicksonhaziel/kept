@@ -60,8 +60,7 @@ def parsed() -> Callable[[str], Criterion]:
             span=make_span(text),
         )
         assert result.criterion is not None, (
-            f"expected {text!r} to parse; diagnostics: "
-            f"{[d.message for d in result.diagnostics]}"
+            f"expected {text!r} to parse; diagnostics: {[d.message for d in result.diagnostics]}"
         )
         return result.criterion
 

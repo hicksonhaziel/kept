@@ -1,9 +1,7 @@
-"""Discover specifications on disk and drive the front end over them.
+"""Spec discovery and parse orchestration. The only front-end module doing I/O.
 
-This is the only module in the front end that touches the filesystem. It also
-owns the path boundary: every path leaving here is repository-relative with
-forward slashes, so no absolute path can reach an artefact and a result produced
-on one machine compares cleanly against one produced on another (REQ-6.3).
+Owns the path boundary: every path leaving here is repository-relative with
+forward slashes, so no absolute path reaches an artefact.
 """
 
 from __future__ import annotations
@@ -16,30 +14,22 @@ from kept.ears.parser import parse_criterion
 from kept.ir import Criterion, Requirement, SpecDocument, build_requirement
 from kept.markdown import extract
 
-#: Where Kiro keeps specifications, relative to the repository root.
 SPECS_DIRECTORY = PurePosixPath(".kiro/specs")
-
-#: The file within each specification directory that holds acceptance criteria.
 REQUIREMENTS_FILENAME = "requirements.md"
 
 
 class SpecNotFoundError(FileNotFoundError):
-    """Raised when a path that was expected to hold a specification does not."""
+    """Raised when a path expected to hold a specification does not."""
 
 
 @dataclass(frozen=True, slots=True)
 class LoadResult:
-    """Every specification found, with all diagnostics gathered along the way."""
-
     documents: tuple[SpecDocument, ...]
     diagnostics: tuple[Diagnostic, ...] = ()
 
     @property
     def criteria(self) -> tuple[Criterion, ...]:
-        """Every criterion across every document, in deterministic order."""
-        return tuple(
-            criterion for document in self.documents for criterion in document.criteria
-        )
+        return tuple(criterion for document in self.documents for criterion in document.criteria)
 
     @property
     def errors(self) -> tuple[Diagnostic, ...]:
@@ -47,57 +37,44 @@ class LoadResult:
 
 
 def relative_posix(path: Path, root: Path) -> str:
-    """Express `path` relative to `root` using forward slashes.
+    """Express `path` relative to `root` with forward slashes.
 
-    Falls back to the path's own name when it lies outside the root, which can
-    happen when a caller points `kept` at a file elsewhere on disk. Emitting a
-    bare name is preferable to leaking an absolute path into an artefact.
+    Falls back to the bare filename when the path lies outside the root, which is
+    preferable to leaking an absolute path into an artefact.
     """
     try:
-        relative = path.resolve().relative_to(root.resolve())
+        return path.resolve().relative_to(root.resolve()).as_posix()
     except ValueError:
         return path.name
-    return relative.as_posix()
 
 
 def discover_spec_files(root: Path) -> tuple[Path, ...]:
     """Find every `requirements.md` directly beneath a directory in `.kiro/specs`.
 
-    Sorted by path so that discovery order is deterministic (REQ-4.1, REQ-6.2).
-    Nested directories are not searched: a specification is one directory holding
-    one requirements document, and recursing would pick up unrelated files that
-    happen to share the name.
+    Not recursive: a specification is one directory holding one requirements
+    document, and recursing would pick up unrelated files of the same name.
     """
     specs_root = root / SPECS_DIRECTORY
     if not specs_root.is_dir():
         return ()
 
-    found = [
+    return tuple(
         candidate / REQUIREMENTS_FILENAME
         for candidate in sorted(specs_root.iterdir())
         if candidate.is_dir() and (candidate / REQUIREMENTS_FILENAME).is_file()
-    ]
-    return tuple(found)
+    )
 
 
 def load_document(path: Path, *, root: Path, name: str | None = None) -> LoadResult:
-    """Parse one requirements document into a `SpecDocument`.
-
-    Args:
-        path: The requirements document to read.
-        root: The repository root, used to relativise paths.
-        name: Override for the specification name. Defaults to the name of the
-            containing directory (REQ-4.2).
-    """
+    """Parse one requirements document. `name` defaults to the directory name."""
     if not path.is_file():
         msg = f"no requirements document at {path}"
         raise SpecNotFoundError(msg)
 
     source = relative_posix(path, root)
     text = path.read_text(encoding="utf-8")
-    spec_name = name if name is not None else path.parent.name
-
     extraction = extract(text, source=source)
+
     diagnostics: list[Diagnostic] = list(extraction.diagnostics)
     requirements: list[Requirement] = []
 
@@ -123,12 +100,9 @@ def load_document(path: Path, *, root: Path, name: str | None = None) -> LoadRes
             )
         )
 
-    # Requirements are ordered by number so that output does not depend on the
-    # order headings happened to appear in (REQ-6.2).
     requirements.sort(key=lambda requirement: requirement.number)
-
     document = SpecDocument(
-        name=spec_name,
+        name=name if name is not None else path.parent.name,
         path=source,
         requirements=tuple(requirements),
     )

@@ -101,9 +101,7 @@ class TestLoading:
             "REQ-1.3",
         ]
 
-    def test_specification_name_comes_from_the_containing_directory(
-        self, tmp_path: Path
-    ) -> None:
+    def test_specification_name_comes_from_the_containing_directory(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         result = load_document(path, root=tmp_path)
         assert result.documents[0].name == "refunds"
@@ -138,9 +136,7 @@ class TestLoading:
 
 
 class TestRequirementOrdering:
-    def test_requirements_are_ordered_by_number_not_by_appearance(
-        self, tmp_path: Path
-    ) -> None:
+    def test_requirements_are_ordered_by_number_not_by_appearance(self, tmp_path: Path) -> None:
         body = textwrap.dedent(
             """
             ### Requirement 2

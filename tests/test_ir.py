@@ -43,9 +43,7 @@ class TestClassification:
         assert classify_pattern((ClauseKind.FEATURE,)) is EarsPattern.OPTIONAL_FEATURE
 
     def test_two_or_more_clauses_is_complex(self) -> None:
-        assert (
-            classify_pattern((ClauseKind.STATE, ClauseKind.TRIGGER)) is EarsPattern.COMPLEX
-        )
+        assert classify_pattern((ClauseKind.STATE, ClauseKind.TRIGGER)) is EarsPattern.COMPLEX
 
     def test_every_clause_kind_has_a_single_clause_pattern(self) -> None:
         # Guards against adding a clause kind and forgetting the mapping.

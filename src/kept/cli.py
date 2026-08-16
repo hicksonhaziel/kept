@@ -124,7 +124,7 @@ def _handle_bind(args: argparse.Namespace) -> int:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
 
-    merged = bindings.merge(discovery.bindings, manual)
+    merged = bindings.merge(discovery.bindings, manual.human_authored())
     criteria = [criterion.id for criterion in spec.criteria if criterion.is_normative]
     unbound = merged.unbound(criteria)
     orphaned = merged.orphaned(criterion.id for criterion in spec.criteria)

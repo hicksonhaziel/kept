@@ -75,6 +75,18 @@ class BindingSet:
     def bound_criteria(self) -> frozenset[str]:
         return frozenset(binding.criterion for binding in self.bindings)
 
+    def human_authored(self) -> BindingSet:
+        """Only the parts of this set a person wrote.
+
+        Annotation-derived entries in a bindings file are a generated view, not a
+        source of truth. Treating them as input would let the file mask a deleted
+        marker, which is exactly the kind of stale evidence kept exists to catch.
+        """
+        return BindingSet(
+            bindings=tuple(b for b in self.bindings if b.origin is Origin.MANUAL),
+            unverifiable=self.unverifiable,
+        )
+
     @property
     def all_oracles(self) -> tuple[str, ...]:
         found: set[str] = set()
@@ -161,8 +173,17 @@ def save(bindings: BindingSet, path: Path) -> None:
 def dumps(bindings: BindingSet) -> str:
     """Render as TOML. Hand-rolled to keep the core free of a writer dependency."""
     lines = [
-        "# Criterion to oracle map, owned by humans and reviewed like any other code.",
-        "# kept verifies; it does not decide what a test is supposed to prove.",
+        "# Criterion to oracle map. kept verifies; it does not decide what a test",
+        "# is supposed to prove.",
+        "#",
+        '# origin = "annotation"  harvested from a @pytest.mark.verifies marker.',
+        "#                        Regenerated on every run and ignored as input, so",
+        "#                        deleting a marker is never masked by this file.",
+        '# origin = "manual"      written by hand. Authoritative, and overrides an',
+        "#                        annotation for the same criterion.",
+        "#",
+        "# An [[unverifiable]] entry excludes a criterion from verdicts and must",
+        "# state why, so the exclusion is a choice a reviewer can challenge.",
         "",
         f"schema_version = {SCHEMA_VERSION}",
     ]

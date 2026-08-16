@@ -1,5 +1,14 @@
-# Criterion to oracle map, owned by humans and reviewed like any other code.
-# kept verifies; it does not decide what a test is supposed to prove.
+# Criterion to oracle map. kept verifies; it does not decide what a test
+# is supposed to prove.
+#
+# origin = "annotation"  harvested from a @pytest.mark.verifies marker.
+#                        Regenerated on every run and ignored as input, so
+#                        deleting a marker is never masked by this file.
+# origin = "manual"      written by hand. Authoritative, and overrides an
+#                        annotation for the same criterion.
+#
+# An [[unverifiable]] entry excludes a criterion from verdicts and must
+# state why, so the exclusion is a choice a reviewer can challenge.
 
 schema_version = 1
 

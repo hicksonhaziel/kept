@@ -43,6 +43,10 @@ htmlcov/
 .kept/cache/
 .kept/runs/
 
+# Local scratch: helper scripts and captured command output. Never committed.
+_*.sh
+*.log
+
 # Editors and OS
 .idea/
 *.swp

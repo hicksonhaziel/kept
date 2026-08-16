@@ -52,6 +52,11 @@ mcp = [
 [project.scripts]
 kept = "kept.cli:main"
 
+# Auto-loads in any environment where kept is installed, so a target project
+# registers the `verifies` marker without touching its conftest.
+[project.entry-points.pytest11]
+kept = "kept.observe.plugin"
+
 [dependency-groups]
 dev = [
   "pytest>=8.0",

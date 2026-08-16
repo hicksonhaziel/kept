@@ -5,15 +5,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TextIO
 
-from kept import __version__, bindings
+from kept import __version__, bindings, pipeline
 from kept.diagnostics import Diagnostic
 from kept.ids import SCHEMA_VERSION, display_hash
 from kept.loader import LoadResult, SpecNotFoundError, load_all, load_document
-from kept.observe import DiscoveryError, discover_bindings
+from kept.observe import ObservationError
 
 EXIT_OK = 0
 EXIT_GATE_VIOLATED = 1
@@ -89,6 +89,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bind_command.set_defaults(handler=_handle_bind)
 
+    observe_command = subcommands.add_parser(
+        "observe",
+        help="run the suite and show which lines each promise actually exercises",
+        description=(
+            "Run the test suite under per-test coverage and gather evidence for each "
+            "promise: which oracles ran, whether they assert anything, and exactly "
+            "which lines of code they touched. Reaches no verdicts."
+        ),
+    )
+    observe_command.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="project root holding .kiro/specs and .kept (default: current directory)",
+    )
+    observe_command.add_argument("--tests", help="restrict the test run to this path")
+    observe_command.add_argument(
+        "--source",
+        default=".",
+        help="path coverage should measure, relative to the root (default: .)",
+    )
+    observe_command.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="emit machine-readable JSON with sorted keys",
+    )
+    observe_command.set_defaults(handler=_handle_observe)
+
     return parser
 
 
@@ -114,39 +143,34 @@ def _handle_parse(args: argparse.Namespace) -> int:
 
 
 def _handle_bind(args: argparse.Namespace) -> int:
-    root: Path = args.root
-
     try:
-        spec = load_all(root)
-        discovery = discover_bindings(root, tests=args.tests)
-        manual = bindings.load(bindings.bindings_path(root))
-    except (DiscoveryError, bindings.BindingsError) as error:
+        stage = pipeline.bind(args.root, tests=args.tests)
+    except (ObservationError, bindings.BindingsError) as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
 
-    merged = bindings.merge(discovery.bindings, manual.human_authored())
-    criteria = [criterion.id for criterion in spec.criteria if criterion.is_normative]
-    unbound = merged.unbound(criteria)
-    orphaned = merged.orphaned(criterion.id for criterion in spec.criteria)
+    merged = stage.bindings
+    unbound, orphaned = stage.unbound, stage.orphaned
+    malformed = stage.report.malformed
 
     if args.write:
-        bindings.save(merged, bindings.bindings_path(root))
+        bindings.save(merged, bindings.bindings_path(args.root))
 
-    report = {
+    summary = {
         "schema_version": SCHEMA_VERSION,
-        "promises": len(criteria),
-        "bound": len([c for c in criteria if c in merged.bound_criteria]),
+        "promises": len(stage.promise_ids),
+        "bound": sum(1 for c in stage.promise_ids if c in merged.bound_criteria),
         "unbound": list(unbound),
         "orphaned": list(orphaned),
         "unverifiable": [entry.to_dict() for entry in merged.unverifiable],
         "oracles": len(merged.all_oracles),
-        "tests_collected": discovery.collected,
-        "malformed": [{"oracle": o, "problem": p} for o, p in discovery.malformed],
+        "tests_collected": stage.report.collected,
+        "malformed": [{"oracle": o, "problem": p} for o, p in malformed],
     }
 
     if args.as_json:
-        print(json.dumps(report, sort_keys=True, indent=2, ensure_ascii=False))
-        return EXIT_GATE_VIOLATED if unbound or orphaned or discovery.malformed else EXIT_OK
+        print(json.dumps(summary, sort_keys=True, indent=2, ensure_ascii=False))
+        return EXIT_GATE_VIOLATED if unbound or orphaned or malformed else EXIT_OK
 
     write = sys.stdout.write
     for binding in merged.bindings:
@@ -156,31 +180,118 @@ def _handle_bind(args: argparse.Namespace) -> int:
         for oracle in binding.oracles:
             write(f"      {oracle}\n")
 
-    if unbound:
-        write("\nunbound promises (nothing claims to verify these)\n")
-        for criterion in unbound:
-            write(f"      {criterion}\n")
+    _write_list(write, "unbound promises (nothing claims to verify these)", unbound)
+    _write_list(write, "orphaned bindings (criterion no longer exists in the spec)", orphaned)
 
-    if orphaned:
-        write("\norphaned bindings (criterion no longer exists in the spec)\n")
-        for criterion in orphaned:
-            write(f"      {criterion}\n")
-
-    for oracle, problem in discovery.malformed:
+    for oracle, problem in malformed:
         write(f"\n  WARNING {oracle}\n      {problem}\n")
 
     write(
-        f"\n{report['promises']} promises · "
-        f"{report['bound']} bound · "
+        f"\n{summary['promises']} promises · "
+        f"{summary['bound']} bound · "
         f"{len(unbound)} unbound · "
-        f"{report['oracles']} oracles across {report['tests_collected']} collected tests\n"
+        f"{summary['oracles']} oracles across {summary['tests_collected']} collected tests\n"
     )
     if args.write:
-        write(f"\nwrote {bindings.bindings_path(root)}\n")
+        write(f"\nwrote {bindings.bindings_path(args.root)}\n")
 
     # Unbound promises are not a crash: kept reported honestly. They are a gate
     # violation, because an unbound promise cannot be verified.
-    return EXIT_GATE_VIOLATED if unbound or orphaned or discovery.malformed else EXIT_OK
+    return EXIT_GATE_VIOLATED if unbound or orphaned or malformed else EXIT_OK
+
+
+def _handle_observe(args: argparse.Namespace) -> int:
+    try:
+        stage = pipeline.observe(args.root, tests=args.tests, source=args.source)
+    except (ObservationError, bindings.BindingsError) as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    observations = stage.observations.criteria
+    problems = {
+        "unbound": list(stage.bind.unbound),
+        "failing": [o.criterion for o in observations if o.failing],
+        "vacuous": [o.criterion for o in observations if o.vacuous and not o.usable],
+        "uncovered": [
+            o.criterion
+            for o in observations
+            if o.usable and not o.covered and o.excluded_reason is None
+        ],
+        "missing_oracles": sorted(
+            {
+                oracle.nodeid
+                for o in observations
+                for oracle in o.oracles
+                if str(oracle.status) == "missing"
+            }
+        ),
+    }
+
+    if args.as_json:
+        print(
+            json.dumps(
+                {
+                    "schema_version": SCHEMA_VERSION,
+                    "observations": stage.observations.to_dict(),
+                    "problems": problems,
+                },
+                sort_keys=True,
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return EXIT_GATE_VIOLATED if any(problems.values()) else EXIT_OK
+
+    write = sys.stdout.write
+    for entry in observations:
+        if entry.excluded_reason is not None:
+            write(f"\n  {entry.criterion}  excluded: {entry.excluded_reason}\n")
+            continue
+
+        write(f"\n  {entry.criterion}  {entry.covered_line_count} lines under audit\n")
+        for oracle in entry.oracles:
+            note = "" if oracle.has_assertion else "  [asserts nothing]"
+            write(f"      {oracle.status:<8} {oracle.nodeid}{note}\n")
+        for path, lines in entry.covered:
+            write(f"        {path}: {_ranges(lines)}\n")
+
+    for label, criteria in problems.items():
+        _write_list(write, label.replace("_", " "), tuple(criteria))
+
+    audited = sum(1 for entry in observations if entry.covered)
+    total_lines = sum(entry.covered_line_count for entry in observations)
+    write(
+        f"\n{len(observations)} promises · "
+        f"{audited} with observed coverage · "
+        f"{total_lines} criterion-line pairs to attack\n"
+    )
+    write("\nObservation only. No verdicts yet: nothing has been attacked.\n")
+
+    return EXIT_GATE_VIOLATED if any(problems.values()) else EXIT_OK
+
+
+def _write_list(write: Callable[[str], int], heading: str, items: tuple[str, ...]) -> None:
+    if not items:
+        return
+    write(f"\n{heading}\n")
+    for item in items:
+        write(f"      {item}\n")
+
+
+def _ranges(lines: tuple[int, ...]) -> str:
+    """Render line numbers compactly: 3-5, 9, 12-14."""
+    if not lines:
+        return "none"
+    groups: list[tuple[int, int]] = []
+    start = previous = lines[0]
+    for line in lines[1:]:
+        if line == previous + 1:
+            previous = line
+            continue
+        groups.append((start, previous))
+        start = previous = line
+    groups.append((start, previous))
+    return ", ".join(str(a) if a == b else f"{a}-{b}" for a, b in groups)
 
 
 def _render_json(result: LoadResult) -> str:

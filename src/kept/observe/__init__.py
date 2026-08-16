@@ -1,7 +1,26 @@
-"""Adapters that observe a target project by running its test suite."""
+"""Adapters that observe a target project by collecting and running its tests."""
 
 from __future__ import annotations
 
-from kept.observe.discover import DiscoveryError, discover_bindings
+from kept.observe.runner import (
+    CoverageResult,
+    ObservationError,
+    Report,
+    RunResult,
+    TestRecord,
+    collect,
+    run,
+)
+from kept.observe.vacuity import OracleShape, scan_files
 
-__all__ = ["DiscoveryError", "discover_bindings"]
+__all__ = [
+    "CoverageResult",
+    "ObservationError",
+    "OracleShape",
+    "Report",
+    "RunResult",
+    "TestRecord",
+    "collect",
+    "run",
+    "scan_files",
+]

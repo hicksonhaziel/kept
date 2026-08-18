@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from kept import observation
+from kept import attack, observation
 from kept.bindings import Binding, BindingSet, Origin
 from kept.bindings import bindings_path as _bindings_path
 from kept.bindings import load as _load_bindings
@@ -49,6 +49,29 @@ class ObserveStage:
     observations: observation.ObservationSet
     exit_code: int
     output: str
+
+    def covered_by_criterion(self) -> dict[str, dict[str, tuple[int, ...]]]:
+        """Lines under audit per criterion, from oracles that actually prove something."""
+        return {
+            entry.criterion: dict(entry.covered)
+            for entry in self.observations.criteria
+            if entry.covered
+        }
+
+    def oracles_by_criterion(self) -> dict[str, tuple[str, ...]]:
+        """Only usable oracles. A failing test would 'notice' every mutant."""
+        return {
+            entry.criterion: tuple(sorted(oracle.nodeid for oracle in entry.usable))
+            for entry in self.observations.criteria
+            if entry.usable
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class AttackStage:
+    observe: ObserveStage
+    result: attack.AttackResult
+    mutants_available: int
 
 
 def bind(root: Path, *, tests: str | None = None) -> BindStage:
@@ -100,6 +123,53 @@ def observe(root: Path, *, tests: str | None = None, source: str = ".") -> Obser
         exit_code=result.exit_code,
         output=result.output,
     )
+
+
+def attack_project(
+    root: Path,
+    *,
+    tests: str | None = None,
+    source: str = ".",
+    cap: int = attack.DEFAULT_CAP,
+    workers: int = attack.DEFAULT_WORKERS,
+    timeout: float = attack.MIN_TIMEOUT_SECONDS,
+    use_cache: bool = True,
+) -> AttackStage:
+    """Observe, then break the covered lines and see which oracles notice."""
+    stage = observe(root, tests=tests, source=source)
+    covered = stage.covered_by_criterion()
+    oracles = stage.oracles_by_criterion()
+
+    paths = sorted({path for per_path in covered.values() for path in per_path})
+    mutants_by_path: dict[str, tuple[attack.Mutant, ...]] = {}
+    available = 0
+
+    for path in paths:
+        candidate = root / path
+        if not candidate.is_file():
+            continue
+        try:
+            mutations = attack.collect(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            # A target kept cannot parse is skipped, never fatal. It will show up
+            # as a criterion with nothing probed rather than as a crash.
+            continue
+        mutants_by_path[path] = attack.from_mutations(path, mutations)
+        available += len(mutations)
+
+    assignments = attack.select(mutants_by_path, covered, cap=cap)
+    cache_path = root / ".kept" / "cache" / "mutants.json" if use_cache else None
+
+    result = attack.execute(
+        root,
+        assignments,
+        oracles,
+        cap=cap,
+        workers=workers,
+        timeout=timeout,
+        cache_path=cache_path,
+    )
+    return AttackStage(observe=stage, result=result, mutants_available=available)
 
 
 def _binding(criterion: str, oracles: tuple[str, ...]) -> Binding:

@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -81,6 +81,66 @@ class RunResult:
     coverage: CoverageResult
     exit_code: int
     output: str
+
+
+@dataclass(frozen=True, slots=True)
+class TestRun:
+    """One targeted test run, as used when probing a mutant."""
+
+    report: Report
+    timed_out: bool = False
+    exit_code: int = 0
+
+
+def run_tests(
+    root: Path,
+    nodeids: Sequence[str],
+    *,
+    timeout: float | None = None,
+) -> TestRun:
+    """Run exactly the given tests, with no coverage instrumentation.
+
+    A timeout is reported rather than raised: a mutant that makes the suite hang
+    has changed behaviour observably, which is a kill, not a failure of kept.
+    """
+    if not nodeids:
+        return TestRun(report=Report())
+
+    command = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--no-header",
+        *nodeids,
+    ]
+
+    with tempfile.TemporaryDirectory() as scratch:
+        destination = Path(scratch) / "report.json"
+        environment = {**os.environ, REPORT_ENV_VAR: str(destination)}
+
+        try:
+            # Fixed argv and no shell, so the command cannot be injected into.
+            completed = subprocess.run(
+                command,
+                cwd=root,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            return TestRun(report=Report(), timed_out=True, exit_code=-1)
+
+        if not destination.is_file():
+            return TestRun(report=Report(), exit_code=completed.returncode)
+
+        payload = json.loads(destination.read_text(encoding="utf-8"))
+
+    return TestRun(report=_parse_report(payload), exit_code=completed.returncode)
 
 
 def collect(root: Path, *, tests: str | None = None) -> Report:

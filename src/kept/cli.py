@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TextIO
 
-from kept import __version__, bindings, pipeline
+from kept import __version__, attack, bindings, pipeline
 from kept.diagnostics import Diagnostic
 from kept.ids import SCHEMA_VERSION, display_hash
 from kept.loader import LoadResult, SpecNotFoundError, load_all, load_document
@@ -117,6 +117,62 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit machine-readable JSON with sorted keys",
     )
     observe_command.set_defaults(handler=_handle_observe)
+
+    attack_command = subcommands.add_parser(
+        "attack",
+        help="break the covered lines and report which oracles fail to notice",
+        description=(
+            "For each promise, mutate the lines its own oracles executed and rerun "
+            "only those oracles. A mutant that survives means the implementation can "
+            "be broken while the promise still reports success."
+        ),
+    )
+    attack_command.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="project root holding .kiro/specs and .kept (default: current directory)",
+    )
+    attack_command.add_argument("--tests", help="restrict the test run to this path")
+    attack_command.add_argument(
+        "--source",
+        default=".",
+        help="path coverage should measure, relative to the root (default: .)",
+    )
+    attack_command.add_argument(
+        "--cap",
+        type=int,
+        default=attack.DEFAULT_CAP,
+        metavar="N",
+        help=f"mutants per promise (default: {attack.DEFAULT_CAP})",
+    )
+    attack_command.add_argument(
+        "--workers",
+        type=int,
+        default=attack.DEFAULT_WORKERS,
+        metavar="N",
+        help=f"parallel test processes (default: {attack.DEFAULT_WORKERS})",
+    )
+    attack_command.add_argument(
+        "--timeout",
+        type=float,
+        default=attack.MIN_TIMEOUT_SECONDS,
+        metavar="SECONDS",
+        help="seconds allowed per mutant before it counts as killed",
+    )
+    attack_command.add_argument(
+        "--no-cache",
+        action="store_false",
+        dest="use_cache",
+        help="ignore and do not write the mutation cache",
+    )
+    attack_command.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="emit machine-readable JSON with sorted keys",
+    )
+    attack_command.set_defaults(handler=_handle_attack)
 
     return parser
 
@@ -268,6 +324,88 @@ def _handle_observe(args: argparse.Namespace) -> int:
     write("\nObservation only. No verdicts yet: nothing has been attacked.\n")
 
     return EXIT_GATE_VIOLATED if any(problems.values()) else EXIT_OK
+
+
+def _handle_attack(args: argparse.Namespace) -> int:
+    try:
+        stage = pipeline.attack_project(
+            args.root,
+            tests=args.tests,
+            source=args.source,
+            cap=args.cap,
+            workers=args.workers,
+            timeout=args.timeout,
+            use_cache=args.use_cache,
+        )
+    except (ObservationError, bindings.BindingsError) as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    result = stage.result
+    criteria = [entry.criterion for entry in stage.observe.observations.criteria]
+    weak = [c for c in criteria if result.survivors_for(c)]
+
+    if args.as_json:
+        print(
+            json.dumps(
+                {
+                    "schema_version": SCHEMA_VERSION,
+                    "cap": result.cap,
+                    "mutants_available": stage.mutants_available,
+                    "mutants_run": len(result.outcomes),
+                    "weak": weak,
+                    "per_criterion": {
+                        c: {
+                            "probed": result.probed(c),
+                            "killed": len(result.killed_for(c)),
+                            "survived": [o.mutant.to_dict() for o in result.survivors_for(c)],
+                        }
+                        for c in criteria
+                        if result.probed(c)
+                    },
+                },
+                sort_keys=True,
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return EXIT_GATE_VIOLATED if weak else EXIT_OK
+
+    write = sys.stdout.write
+    for criterion in criteria:
+        probed = result.probed(criterion)
+        if not probed:
+            continue
+        survivors = result.survivors_for(criterion)
+        killed = probed - len(survivors)
+        write(f"\n  {criterion}  {killed}/{probed} mutants killed\n")
+        for outcome in survivors:
+            # The site index disambiguates two mutation sites on one line, such as
+            # both comparisons in `a <= 0 or b <= 0`.
+            location = f"{outcome.mutant.path}:{outcome.mutant.line}#{outcome.mutant.index}"
+            write(f"      survived  {location:<28} {outcome.mutant.description}\n")
+
+    unprobed = [c for c in criteria if not result.probed(c)]
+    _write_list(write, "not probed (no usable oracle, or no covered lines)", tuple(unprobed))
+
+    total_probed = sum(result.probed(c) for c in criteria)
+    total_survived = sum(len(result.survivors_for(c)) for c in criteria)
+    write(
+        f"\n{len(result.outcomes)} mutants run of {stage.mutants_available} available "
+        f"(cap {result.cap} per promise, {result.workers} workers)\n"
+    )
+    write(
+        f"{total_probed} criterion-mutant pairs · "
+        f"{total_probed - total_survived} killed · "
+        f"{total_survived} survived · "
+        f"{len(weak)} of {len(criteria)} promises have at least one survivor\n"
+    )
+    write(
+        "\nFacts only, no verdicts. Whether a survivor count makes a promise WEAK is "
+        "decided by the rule stage, against a declared threshold.\n"
+    )
+
+    return EXIT_OK
 
 
 def _write_list(write: Callable[[str], int], heading: str, items: tuple[str, ...]) -> None:

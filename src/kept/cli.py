@@ -341,6 +341,35 @@ def build_parser() -> argparse.ArgumentParser:
     _add_spec_option(prompt_command)
     prompt_command.set_defaults(handler=_handle_prompt)
 
+    serve_command = subcommands.add_parser(
+        "serve",
+        help="run the MCP server so an agent can read the evidence (optional extra)",
+        description=(
+            "Expose kept over MCP on stdio: list the promises, read the committed "
+            "ledger, render a remediation brief, and run verify. Offline, and no "
+            "model participates in a verdict. The root and specification are fixed "
+            "by these flags, not chosen by the client."
+        ),
+    )
+    serve_command.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="project root the server is allowed to read (default: current directory)",
+    )
+    serve_command.add_argument(
+        "--tests",
+        help="restrict test collection to this path",
+    )
+    serve_command.add_argument(
+        "--source",
+        default=".",
+        help="path coverage should measure, relative to the root (default: .)",
+    )
+    _add_python_option(serve_command)
+    _add_spec_option(serve_command)
+    serve_command.set_defaults(handler=_handle_serve)
+
     return parser
 
 
@@ -707,6 +736,24 @@ def _handle_prompt(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     print(rendered, end="")
+    return EXIT_OK
+
+
+def _handle_serve(args: argparse.Namespace) -> int:
+    from kept import serve as serve_module
+
+    config = serve_module.Config(
+        root=args.root,
+        specs=tuple(args.specs or ()),
+        tests=args.tests,
+        source=args.source,
+        python=args.python,
+    )
+    try:
+        serve_module.serve(config)
+    except serve_module.MissingExtraError as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
     return EXIT_OK
 
 

@@ -49,6 +49,28 @@ It reads the ledger, runs no tests, reaches no verdict, and consults no model. I
 is a suggestion, and it says so in its own text. Only `kept verify` moves a
 verdict. See [ADR-0005](docs/adr/0005-the-brief-is-outside-the-verification-path.md).
 
+## Use it from an agent
+
+`kept serve` speaks [MCP](https://modelcontextprotocol.io) over stdio, so an agent
+can read the evidence and act on it:
+
+```bash
+uv sync --extra mcp
+uv run kept serve --root fixtures/refund_engine
+```
+
+| Tool | Does |
+|---|---|
+| `list_promises` | every criterion, with the verdict recorded for it |
+| `read_ledger` | the committed ledger and the evidence behind each verdict |
+| `remediation_brief` | what one promise's evidence says, and the change it asks for |
+| `verify` | run the pipeline; the only tool that can move a verdict |
+
+The root and the specification are fixed by the flags you start the server with,
+not chosen by the client, so an agent cannot point kept at a different project. The
+first three tools are read-only. No model participates in a verdict, in this path
+or any other.
+
 ## Scope
 
 - **Python and pytest only.** Not JavaScript, not Go.

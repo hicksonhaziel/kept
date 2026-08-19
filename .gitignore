@@ -47,9 +47,12 @@ htmlcov/
 **/.kept/cache/
 **/.kept/runs/
 
-# Local scratch: helper scripts and captured command output. Never committed.
-_*.sh
-_*.py
+# Local scratch: helper scripts and captured command output at the repository
+# root. Anchored with a leading slash: unanchored `_*.py` also matches every
+# `__init__.py`, which silently left new packages out of the commit and broke a
+# clean clone while the working tree kept running.
+/_*.sh
+/_*.py
 *.log
 
 # Editors and OS

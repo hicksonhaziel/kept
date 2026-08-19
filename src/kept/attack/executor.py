@@ -155,8 +155,9 @@ def execute(
 
     cache = _Cache(cache_path)
     hashes = _source_hashes(root, {assignment.mutant.path for assignment in assignments})
+    suite_hash = _suite_hash(root, oracles)
 
-    pending, resolved = _partition(assignments, oracles, hashes, cache)
+    pending, resolved = _partition(assignments, oracles, hashes, suite_hash, cache)
 
     if pending:
         worker_count = max(1, min(workers, len(pending)))
@@ -173,9 +174,13 @@ def execute(
                 resolved.append(outcome)
                 source_hash = hashes.get(outcome.mutant.path, "")
                 for criterion in outcome.killed:
-                    cache.put(_key(source_hash, outcome.mutant, oracles, criterion), True)
+                    cache.put(
+                        _key(source_hash, suite_hash, outcome.mutant, oracles, criterion), True
+                    )
                 for criterion in outcome.survived:
-                    cache.put(_key(source_hash, outcome.mutant, oracles, criterion), False)
+                    cache.put(
+                        _key(source_hash, suite_hash, outcome.mutant, oracles, criterion), False
+                    )
         cache.flush()
 
     resolved.sort(key=lambda outcome: _outcome_order(outcome))
@@ -184,15 +189,34 @@ def execute(
 
 def _key(
     source_hash: str,
+    suite_hash: str,
     mutant: Mutant,
     oracles: Mapping[str, tuple[str, ...]],
     criterion: str,
 ) -> str:
     return cache_key(
         source_hash=source_hash,
+        suite_hash=suite_hash,
         mutant=mutant,
         oracles=oracles.get(criterion, ()),
     )
+
+
+def _suite_hash(root: Path, oracles: Mapping[str, tuple[str, ...]]) -> str:
+    """Digest the contents of every test file contributing an oracle.
+
+    Deliberately coarse: any change to any test file invalidates the whole cache.
+    A cache that can serve a verdict gathered against a different test is worse
+    than no cache at all.
+    """
+    files = sorted({nodeid.partition("::")[0] for bound in oracles.values() for nodeid in bound})
+    digest = hashlib.sha256()
+    for relative in files:
+        candidate = root / relative
+        digest.update(relative.encode("utf-8"))
+        if candidate.is_file():
+            digest.update(hashlib.sha256(candidate.read_bytes()).digest())
+    return digest.hexdigest()
 
 
 def _outcome_order(outcome: MutantOutcome) -> tuple[str, int, int]:
@@ -203,6 +227,7 @@ def _partition(
     assignments: tuple[Assignment, ...],
     oracles: Mapping[str, tuple[str, ...]],
     hashes: Mapping[str, str],
+    suite_hash: str,
     cache: _Cache,
 ) -> tuple[list[Assignment], list[MutantOutcome]]:
     """Split assignments into those needing a run and those already known."""
@@ -217,11 +242,7 @@ def _partition(
 
         for criterion in assignment.criteria:
             hit = cache.get(
-                cache_key(
-                    source_hash=source_hash,
-                    mutant=assignment.mutant,
-                    oracles=oracles.get(criterion, ()),
-                )
+                _key(source_hash, suite_hash, assignment.mutant, oracles, criterion)
             )
             if hit is None:
                 unknown.append(criterion)

@@ -139,9 +139,29 @@ def _spread(candidates: list[Mutant], cap: int) -> list[Mutant]:
     return taken
 
 
-def cache_key(*, source_hash: str, mutant: Mutant, oracles: tuple[str, ...]) -> str:
-    """Identify a mutant run by everything that could change its outcome."""
+def cache_key(
+    *,
+    source_hash: str,
+    suite_hash: str,
+    mutant: Mutant,
+    oracles: tuple[str, ...],
+) -> str:
+    """Identify a mutant run by everything that could change its outcome.
+
+    `suite_hash` covers the contents of the test files, not merely the oracle
+    names. Without it, weakening an assertion leaves the mutated file and the node
+    IDs untouched, and kept would serve a cached verdict gathered against a
+    stronger test. That is the precise failure this tool exists to detect, so the
+    cache must not be capable of it.
+    """
     payload = "\n".join(
-        [source_hash, mutant.path, str(mutant.index), mutant.operator, *sorted(oracles)]
+        [
+            source_hash,
+            suite_hash,
+            mutant.path,
+            str(mutant.index),
+            mutant.operator,
+            *sorted(oracles),
+        ]
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()

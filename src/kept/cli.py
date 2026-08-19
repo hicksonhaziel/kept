@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TextIO
 
-from kept import __version__, attack, bindings, pipeline
+from kept import __version__, attack, bindings, ledger, pipeline, report, verdict
 from kept.diagnostics import Diagnostic
 from kept.ids import SCHEMA_VERSION, display_hash
 from kept.loader import LoadResult, SpecNotFoundError, load_all, load_document
@@ -189,6 +189,94 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit machine-readable JSON with sorted keys",
     )
     attack_command.set_defaults(handler=_handle_attack)
+
+    verify_command = subcommands.add_parser(
+        "verify",
+        help="reach a verdict on every promise and write the evidence ledger",
+        description=(
+            "Run the whole pipeline and rule on each promise: KEPT, WEAK, UNPROVEN, "
+            "or BROKEN. Compares against the committed ledger to report drift and "
+            "regressions. Produces evidence, not proof."
+        ),
+    )
+    verify_command.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="project root holding .kiro/specs and .kept (default: current directory)",
+    )
+    verify_command.add_argument("--tests", help="restrict the test run to this path")
+    _add_python_option(verify_command)
+    verify_command.add_argument(
+        "--source",
+        default=".",
+        help="path coverage should measure, relative to the root (default: .)",
+    )
+    verify_command.add_argument(
+        "--threshold",
+        type=float,
+        default=verdict.DEFAULT_THRESHOLD,
+        metavar="RATIO",
+        help=(
+            "share of detectable breakages a promise's own oracles must catch to be "
+            f"KEPT (default: {verdict.DEFAULT_THRESHOLD}, meaning all of them)"
+        ),
+    )
+    verify_command.add_argument(
+        "--cap",
+        type=int,
+        default=attack.DEFAULT_CAP,
+        metavar="N",
+        help=f"mutants per promise (default: {attack.DEFAULT_CAP})",
+    )
+    verify_command.add_argument(
+        "--workers",
+        type=int,
+        default=attack.DEFAULT_WORKERS,
+        metavar="N",
+        help=f"parallel test processes (default: {attack.DEFAULT_WORKERS})",
+    )
+    verify_command.add_argument(
+        "--timeout",
+        type=float,
+        default=attack.MIN_TIMEOUT_SECONDS,
+        metavar="SECONDS",
+        help="seconds allowed per mutant before it counts as killed",
+    )
+    verify_command.add_argument(
+        "--gate",
+        choices=("none", "no-regression", "no-broken", "all-kept"),
+        default="no-regression",
+        help=(
+            "what makes this run fail with exit 1. Defaults to no-regression, which "
+            "is adoptable on an existing codebase from day one"
+        ),
+    )
+    verify_command.add_argument(
+        "--write",
+        action="store_true",
+        help="write .kept/ledger.json, EVIDENCE.md, and .kept/badge.svg",
+    )
+    verify_command.add_argument(
+        "--show-unpinned",
+        type=int,
+        default=10,
+        metavar="N",
+        help="how many unpinned lines to list (default: 10)",
+    )
+    verify_command.add_argument(
+        "--no-cache",
+        action="store_false",
+        dest="use_cache",
+        help="ignore and do not write the mutation cache",
+    )
+    verify_command.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="emit machine-readable JSON with sorted keys",
+    )
+    verify_command.set_defaults(handler=_handle_verify)
 
     return parser
 
@@ -425,6 +513,120 @@ def _handle_attack(args: argparse.Namespace) -> int:
     )
 
     return EXIT_OK
+
+
+def _handle_verify(args: argparse.Namespace) -> int:
+    try:
+        stage = pipeline.verify(
+            args.root,
+            tests=args.tests,
+            source=args.source,
+            cap=args.cap,
+            workers=args.workers,
+            timeout=args.timeout,
+            use_cache=args.use_cache,
+            python=args.python,
+            threshold=args.threshold,
+        )
+    except (ObservationError, bindings.BindingsError, ledger.LedgerError) as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    fresh = stage.ledger
+    written: list[str] = []
+
+    if args.write:
+        ledger.save(fresh, ledger.ledger_path(args.root))
+        written.append(str(ledger.ledger_path(args.root)))
+
+        evidence_path = args.root / "EVIDENCE.md"
+        evidence_path.write_text(report.render_evidence(fresh), encoding="utf-8")
+        written.append(str(evidence_path))
+
+        badge_path = args.root / ".kept" / "badge.svg"
+        badge_path.parent.mkdir(parents=True, exist_ok=True)
+        badge_path.write_text(report.render_badge(fresh), encoding="utf-8")
+        written.append(str(badge_path))
+
+    if args.as_json:
+        print(
+            json.dumps(
+                {
+                    "ledger": fresh.to_dict(),
+                    "drift": stage.drift.to_dict(),
+                    "regressions": [r.to_dict() for r in stage.regressions],
+                    "written": written,
+                },
+                sort_keys=True,
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return _gate(args.gate, stage)
+
+    write = sys.stdout.write
+    for ruling in fresh.rulings:
+        evidence = ruling.evidence
+        score = evidence.score
+        caught = (
+            f"{evidence.discriminating - len(evidence.missed)}/{evidence.discriminating}"
+            if score is not None
+            else "  -  "
+        )
+        write(f"\n  {ruling.criterion:<10} {str(ruling.verdict).upper():<9} {caught:>7}  ")
+        write(f"{ruling.reason or ''}\n")
+        for missed in evidence.missed:
+            write(
+                f"      missed  {missed.path}:{missed.line:<5} {missed.description}"
+                f"  (caught by {', '.join(missed.caught_by)})\n"
+            )
+
+    if fresh.unpinned:
+        write(f"\n{len(fresh.unpinned)} unpinned lines: no bound oracle noticed these\n")
+        for entry in fresh.unpinned[: args.show_unpinned]:
+            write(f"      {entry.path}:{entry.line:<5} {entry.description}\n")
+        if len(fresh.unpinned) > args.show_unpinned:
+            write(f"      ... and {len(fresh.unpinned) - args.show_unpinned} more\n")
+
+    _write_drift(write, stage)
+
+    write(f"\n{fresh.headline()}\n")
+    if written:
+        write("\nwrote " + ", ".join(written) + "\n")
+    write("\nEvidence, not proof. A killed mutant is not a guarantee of correctness.\n")
+
+    return _gate(args.gate, stage)
+
+
+def _write_drift(write: Callable[[str], int], stage: pipeline.VerifyStage) -> None:
+    drift = stage.drift
+    if drift.stale:
+        write("\nSTALE: the committed ledger judged different wording for these\n")
+        for criterion in drift.stale:
+            write(f"      {criterion}\n")
+    if drift.vanished:
+        write("\nvanished since the committed ledger\n")
+        for criterion in drift.vanished:
+            write(f"      {criterion}\n")
+    if stage.regressions:
+        write("\nREGRESSED against the committed ledger\n")
+        for regression in stage.regressions:
+            write(f"      {regression.criterion}  {regression.was} -> {regression.now}\n")
+
+
+def _gate(gate: str, stage: pipeline.VerifyStage) -> int:
+    """Apply the requested gate. Exit codes are a contract, not a detail."""
+    counts = stage.ledger.counts
+    if gate == "none":
+        return EXIT_OK
+    if gate == "no-regression":
+        return EXIT_GATE_VIOLATED if stage.regressions else EXIT_OK
+    if gate == "no-broken":
+        return EXIT_GATE_VIOLATED if counts[str(verdict.Verdict.BROKEN)] else EXIT_OK
+    if gate == "all-kept":
+        shortfall = stage.ledger.promises - counts[str(verdict.Verdict.KEPT)]
+        return EXIT_GATE_VIOLATED if shortfall else EXIT_OK
+    return EXIT_USAGE
 
 
 def _write_list(write: Callable[[str], int], heading: str, items: tuple[str, ...]) -> None:

@@ -9,7 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from kept import attack, observation
+from kept import __version__, attack, observation, verdict
+from kept import ledger as ledger_module
 from kept.bindings import Binding, BindingSet, Origin
 from kept.bindings import bindings_path as _bindings_path
 from kept.bindings import load as _load_bindings
@@ -72,6 +73,16 @@ class AttackStage:
     observe: ObserveStage
     result: attack.AttackResult
     mutants_available: int
+
+
+@dataclass(frozen=True, slots=True)
+class VerifyStage:
+    attack: AttackStage
+    judgement: verdict.Judgement
+    ledger: ledger_module.Ledger
+    stored: ledger_module.Ledger | None
+    drift: ledger_module.Drift
+    regressions: tuple[ledger_module.Regression, ...]
 
 
 def bind(root: Path, *, tests: str | None = None, python: Path | None = None) -> BindStage:
@@ -178,6 +189,67 @@ def attack_project(
         python=resolve_interpreter(root, python),
     )
     return AttackStage(observe=stage, result=result, mutants_available=available)
+
+
+def verify(
+    root: Path,
+    *,
+    tests: str | None = None,
+    source: str = ".",
+    cap: int = attack.DEFAULT_CAP,
+    workers: int = attack.DEFAULT_WORKERS,
+    timeout: float = attack.MIN_TIMEOUT_SECONDS,
+    use_cache: bool = True,
+    python: Path | None = None,
+    threshold: float = verdict.DEFAULT_THRESHOLD,
+) -> VerifyStage:
+    """The whole pipeline: parse, bind, observe, attack, rule, ledger."""
+    stage = attack_project(
+        root,
+        tests=tests,
+        source=source,
+        cap=cap,
+        workers=workers,
+        timeout=timeout,
+        use_cache=use_cache,
+        python=python,
+    )
+
+    criteria = {c.id: c.content_hash for c in stage.observe.bind.promises}
+    judged = verdict.judge(
+        observations=stage.observe.observations,
+        attack=stage.result,
+        hashes=criteria,
+        threshold=threshold,
+    )
+
+    covered = stage.observe.covered_by_criterion()
+    paths = {path for per_path in covered.values() for path in per_path}
+    sources = ledger_module.source_hashes(root, paths)
+
+    fresh = ledger_module.build(
+        judged,
+        kept_version=__version__,
+        settings=ledger_module.Settings(threshold=threshold, cap=cap),
+        sources=sources,
+        commit=ledger_module.current_commit(root),
+    )
+
+    stored = ledger_module.load(ledger_module.ledger_path(root))
+    return VerifyStage(
+        attack=stage,
+        judgement=judged,
+        ledger=fresh,
+        stored=stored,
+        drift=(
+            ledger_module.drift(stored, hashes=criteria, sources=sources)
+            if stored is not None
+            else ledger_module.Drift()
+        ),
+        regressions=(
+            ledger_module.regressions(stored, fresh) if stored is not None else ()
+        ),
+    )
 
 
 def _binding(criterion: str, oracles: tuple[str, ...]) -> Binding:

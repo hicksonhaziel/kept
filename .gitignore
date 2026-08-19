@@ -38,10 +38,14 @@ env/
 coverage.xml
 htmlcov/
 
-# kept scratch space. The ledger and bindings are committed; the mutation cache
-# and per-run working data are not.
-.kept/cache/
-.kept/runs/
+# kept scratch space. The ledger, bindings, and badge are committed on purpose;
+# the mutation cache and per-run working data are not.
+#
+# The `**/` prefix is load-bearing. A pattern containing a slash is anchored to
+# this file's directory, so a bare `.kept/cache/` would silently fail to match a
+# nested project such as fixtures/refund_engine/.kept/cache/.
+**/.kept/cache/
+**/.kept/runs/
 
 # Local scratch: helper scripts and captured command output. Never committed.
 _*.sh

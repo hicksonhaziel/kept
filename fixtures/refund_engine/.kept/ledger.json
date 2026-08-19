@@ -1,0 +1,1915 @@
+{
+  "commit": "34e161d540d923a7fc07ea073ee925c4306f6b15",
+  "criteria": [
+    {
+      "content_hash": "ac6c316a15a11e8929934dce433efecc28a628c48dbc423d469d9d09abe389d9",
+      "criterion": "REQ-1.1",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            101,
+            105,
+            116,
+            117,
+            122,
+            124,
+            125,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 9,
+          "killed": 6,
+          "probed": 12,
+          "unpinned": 3
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_refund_cannot_exceed_amount_paid",
+            "status": "passed"
+          }
+        ],
+        "score": 0.6666666666666666
+      },
+      "reason": "3 of 9 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "fbc300b99db9134394ebf90645d3ccdd73430752d450f573004cb9e2389c2bf0",
+      "criterion": "REQ-1.2",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            116,
+            117,
+            122,
+            123,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 7,
+          "killed": 6,
+          "probed": 12,
+          "unpinned": 5
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_negative_refund_is_rejected",
+            "status": "passed"
+          }
+        ],
+        "score": 0.8571428571428571
+      },
+      "reason": "1 of 7 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "3db4ee92738bc22f7a2c3d6193d180bb9ce185054e85a276caf2ec6514d622c8",
+      "criterion": "REQ-1.3",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            116,
+            117,
+            122,
+            123,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.2"
+            ],
+            "description": "<= to >=",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 7,
+          "killed": 6,
+          "probed": 12,
+          "unpinned": 5
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_zero_refund_is_rejected",
+            "status": "passed"
+          }
+        ],
+        "score": 0.8571428571428571
+      },
+      "reason": "1 of 7 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "516f08246da26ceeabb9331eb0e7c03d65f4b741c3469c97c079256b87a77b46",
+      "criterion": "REQ-1.4",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            101,
+            105,
+            116,
+            117,
+            122,
+            124,
+            125,
+            127,
+            128,
+            129,
+            130,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 10,
+          "killed": 7,
+          "probed": 12,
+          "unpinned": 2
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_refunds_cannot_total_more_than_paid",
+            "status": "passed"
+          }
+        ],
+        "score": 0.7
+      },
+      "reason": "3 of 10 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "667f893ad1dac573818815845d6c6f3291646b2f94f492cc773bf12604da7c5b",
+      "criterion": "REQ-1.5",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            101,
+            105,
+            109,
+            116,
+            117,
+            122,
+            124,
+            125,
+            127,
+            128,
+            129,
+            130,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 10,
+          "killed": 8,
+          "probed": 12,
+          "unpinned": 2
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_no_further_refund_after_full_refund",
+            "status": "passed"
+          }
+        ],
+        "score": 0.8
+      },
+      "reason": "2 of 10 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "91f9d342deaac14b260281d156205dba87786bcfbbd7b5cd72be90fcb2a05a3b",
+      "criterion": "REQ-2.1",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            83,
+            86,
+            87,
+            88,
+            89,
+            93,
+            101,
+            105,
+            116,
+            117,
+            118,
+            120,
+            122,
+            124,
+            127,
+            128,
+            129,
+            130
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 120,
+            "operator": "return",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 11,
+          "killed": 6,
+          "probed": 12,
+          "unpinned": 1
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_same_reference_records_one_refund",
+            "status": "passed"
+          }
+        ],
+        "score": 0.5454545454545454
+      },
+      "reason": "5 of 11 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "88bfa70e87f658b1f0b8dd50d72e4d1327e59be5b682b47620ab03178fe6fe6c",
+      "criterion": "REQ-2.2",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            83,
+            86,
+            87,
+            88,
+            89,
+            101,
+            105,
+            116,
+            117,
+            118,
+            120,
+            122,
+            124,
+            127,
+            128,
+            129,
+            130
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 11,
+          "killed": 8,
+          "probed": 12,
+          "unpinned": 1
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_same_reference_returns_an_equal_result",
+            "status": "passed"
+          }
+        ],
+        "score": 0.7272727272727273
+      },
+      "reason": "3 of 11 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "5eb46310a57d58966097b7ff5734884d34744ebefe4e657afbc85c98525b29f9",
+      "criterion": "REQ-2.3",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            83,
+            86,
+            87,
+            88,
+            89,
+            93,
+            101,
+            105,
+            116,
+            117,
+            122,
+            124,
+            127,
+            128,
+            129,
+            130
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 11,
+          "killed": 7,
+          "probed": 12,
+          "unpinned": 1
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_different_references_are_distinct_refunds",
+            "status": "passed"
+          }
+        ],
+        "score": 0.6363636363636364
+      },
+      "reason": "4 of 11 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "64f549cb5cd6768fc157d88a3f0530985cab51867d28c829270301cf650508dc",
+      "criterion": "REQ-2.4",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            101,
+            105,
+            116,
+            117,
+            118,
+            119,
+            122,
+            124,
+            127,
+            128,
+            129,
+            130,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 10,
+          "killed": 6,
+          "probed": 12,
+          "unpinned": 2
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_reused_reference_with_a_different_amount_is_rejected",
+            "status": "passed"
+          }
+        ],
+        "score": 0.6
+      },
+      "reason": "4 of 10 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "debca62b9600b9205f6390ed163436e92ab70598d7bf9db9fccf600ec29c386b",
+      "criterion": "REQ-3.1",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            30,
+            32,
+            33,
+            34,
+            40,
+            42,
+            44
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "<= to >=",
+            "line": 30,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": ">= to >",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2",
+              "REQ-4.4"
+            ],
+            "description": ">= to <=",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3",
+              "REQ-4.5"
+            ],
+            "description": "* to /",
+            "line": 34,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": "* to /",
+            "line": 44,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 6,
+          "killed": 1,
+          "probed": 12,
+          "unpinned": 6
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_amounts_are_integers",
+            "status": "passed"
+          }
+        ],
+        "score": 0.16666666666666666
+      },
+      "reason": "5 of 6 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "f93c5611b7a9d77c1310cb355d70544eef199d69fd69ec0a0721870dc4623b54",
+      "criterion": "REQ-3.2",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25
+          ]
+        },
+        "missed": [],
+        "mutants": {
+          "discriminating": 1,
+          "killed": 1,
+          "probed": 3,
+          "unpinned": 2
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_half_rounds_away_from_zero",
+            "status": "passed"
+          }
+        ],
+        "score": 1.0
+      },
+      "reason": null,
+      "verdict": "kept"
+    },
+    {
+      "content_hash": "aa22fb038cab287314df0751f183a7e5e59f734ece8b57a6a6e0f90268f9c824",
+      "criterion": "REQ-3.3",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            49,
+            50,
+            53,
+            54,
+            57,
+            58,
+            59,
+            60,
+            62,
+            63,
+            64
+          ]
+        },
+        "missed": [],
+        "mutants": {
+          "discriminating": 8,
+          "killed": 8,
+          "probed": 12,
+          "unpinned": 4
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_allocation_parts_sum_to_the_total",
+            "status": "passed"
+          }
+        ],
+        "score": 1.0
+      },
+      "reason": null,
+      "verdict": "kept"
+    },
+    {
+      "content_hash": "e97f3eb6a1ffba5a334ad44cab50a616c717dd45bbbee008cf228077c7004b62",
+      "criterion": "REQ-3.4",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            30,
+            32,
+            33,
+            34,
+            40,
+            42,
+            44
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "<= to >=",
+            "line": 30,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": ">= to >",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2",
+              "REQ-4.4"
+            ],
+            "description": ">= to <=",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3",
+              "REQ-4.5"
+            ],
+            "description": "* to /",
+            "line": 34,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": "* to /",
+            "line": 44,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 6,
+          "killed": 1,
+          "probed": 12,
+          "unpinned": 6
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_amounts_are_integers",
+            "status": "passed"
+          }
+        ],
+        "score": 0.16666666666666666
+      },
+      "reason": "5 of 6 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "d3868f70c02f5dbe1c006a7008301c13a6c8a72b635d7aed9b1c201b613bf146",
+      "criterion": "REQ-4.1",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            30,
+            32,
+            33,
+            35
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "<= to >=",
+            "line": 30,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "condition forced to True",
+            "line": 30,
+            "operator": "guard",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": ">= to >",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 7,
+          "killed": 4,
+          "probed": 11,
+          "unpinned": 4
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_no_discount_below_the_first_tier",
+            "status": "passed"
+          }
+        ],
+        "score": 0.5714285714285714
+      },
+      "reason": "3 of 7 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "38085e4194a336ad6cfa42702ef793228844a2971d20f1051bc429387b1ed2e7",
+      "criterion": "REQ-4.2",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            30,
+            32,
+            33,
+            34
+          ]
+        },
+        "missed": [],
+        "mutants": {
+          "discriminating": 8,
+          "killed": 8,
+          "probed": 12,
+          "unpinned": 4
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_ten_percent_discount_in_the_first_tier",
+            "status": "passed"
+          }
+        ],
+        "score": 1.0
+      },
+      "reason": null,
+      "verdict": "kept"
+    },
+    {
+      "content_hash": "202730cbf1466145f0c4712eabfce1742a5e4f35906841c4feb02064ceb2999a",
+      "criterion": "REQ-4.3",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            30,
+            32,
+            33,
+            34
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2",
+              "REQ-4.4"
+            ],
+            "description": ">= to <=",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2"
+            ],
+            "description": "condition forced to True",
+            "line": 33,
+            "operator": "guard",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 8,
+          "killed": 6,
+          "probed": 12,
+          "unpinned": 4
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_fifteen_percent_discount_in_the_top_tier",
+            "status": "passed"
+          }
+        ],
+        "score": 0.75
+      },
+      "reason": "2 of 8 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "5d67328036ea4f7330ba0e278b845808de3b3fc9ae815b07fd35636645000001",
+      "criterion": "REQ-4.4",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            30,
+            32,
+            33,
+            34
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "<= to >=",
+            "line": 30,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "condition forced to True",
+            "line": 30,
+            "operator": "guard",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": ">= to >",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2"
+            ],
+            "description": "condition forced to True",
+            "line": 33,
+            "operator": "guard",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3",
+              "REQ-4.5"
+            ],
+            "description": "* to /",
+            "line": 34,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 8,
+          "killed": 3,
+          "probed": 12,
+          "unpinned": 4
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_discount_does_not_shrink_as_the_subtotal_grows",
+            "status": "passed"
+          }
+        ],
+        "score": 0.375
+      },
+      "reason": "5 of 8 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "449ae653ed1aa7b8a8da368a7a74fb93c376e53ec765b605131c61edd5760d60",
+      "criterion": "REQ-4.5",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            30,
+            32,
+            33,
+            34
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "<= to >=",
+            "line": 30,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": "condition forced to True",
+            "line": 30,
+            "operator": "guard",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.2",
+              "REQ-4.3"
+            ],
+            "description": ">= to >",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2",
+              "REQ-4.4"
+            ],
+            "description": ">= to <=",
+            "line": 33,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-4.1",
+              "REQ-4.2"
+            ],
+            "description": "condition forced to True",
+            "line": 33,
+            "operator": "guard",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 8,
+          "killed": 3,
+          "probed": 12,
+          "unpinned": 4
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_discount_never_exceeds_the_subtotal",
+            "status": "passed"
+          }
+        ],
+        "score": 0.375
+      },
+      "reason": "5 of 8 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "51d164fae0583db5e59b8e1f57ca861082ea178f4edc6e48ce6cfe0db0c858a2",
+      "criterion": "REQ-5.1",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            40,
+            42,
+            44
+          ]
+        },
+        "missed": [],
+        "mutants": {
+          "discriminating": 7,
+          "killed": 7,
+          "probed": 12,
+          "unpinned": 5
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_partial_refund_prorates_tax",
+            "status": "passed"
+          }
+        ],
+        "score": 1.0
+      },
+      "reason": null,
+      "verdict": "kept"
+    },
+    {
+      "content_hash": "9b0282703abdde3575fa90bd4b198fc60f9179ca3497f142814a6624bb725330",
+      "criterion": "REQ-5.2",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            40,
+            42,
+            43
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": ">= to <=",
+            "line": 42,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": "condition forced to True",
+            "line": 42,
+            "operator": "guard",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 6,
+          "killed": 4,
+          "probed": 12,
+          "unpinned": 6
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_full_refund_returns_all_tax",
+            "status": "passed"
+          }
+        ],
+        "score": 0.6666666666666666
+      },
+      "reason": "2 of 6 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "1be953b1199beba8c1285687a5e4450bfe2f96c0f83e61c38be5f34f5c88dc18",
+      "criterion": "REQ-5.3",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            25,
+            40,
+            42,
+            44
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-5.1",
+              "REQ-5.2"
+            ],
+            "description": "<= to >=",
+            "line": 40,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": ">= to <=",
+            "line": 42,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": "condition forced to True",
+            "line": 42,
+            "operator": "guard",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.1"
+            ],
+            "description": "* to /",
+            "line": 44,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 7,
+          "killed": 3,
+          "probed": 12,
+          "unpinned": 5
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_prorated_tax_never_exceeds_tax_charged",
+            "status": "passed"
+          }
+        ],
+        "score": 0.42857142857142855
+      },
+      "reason": "4 of 7 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "ae573043f2b9c3b8a30d87263b7ac081925b90ded011e7743da4aa43af7bf760",
+      "criterion": "REQ-5.4",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            40,
+            41
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-5.1",
+              "REQ-5.2"
+            ],
+            "description": "<= to >=",
+            "line": 40,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.2"
+            ],
+            "description": "<= to >=",
+            "line": 40,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-5.2"
+            ],
+            "description": "condition forced to True",
+            "line": 40,
+            "operator": "guard",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 5,
+          "killed": 2,
+          "probed": 11,
+          "unpinned": 6
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_no_goods_refunded_prorates_no_tax",
+            "status": "passed"
+          }
+        ],
+        "score": 0.4
+      },
+      "reason": "3 of 5 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "582c9e5f4476ace762e7bfbc51f7bbc4bfc6636885f10a01574c782083aaae0e",
+      "criterion": "REQ-6.1",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            83,
+            86,
+            87,
+            88,
+            89,
+            93,
+            101,
+            105,
+            116,
+            117,
+            122,
+            124,
+            127,
+            128,
+            129,
+            130
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 11,
+          "killed": 7,
+          "probed": 12,
+          "unpinned": 1
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_accepted_refund_records_its_reference",
+            "status": "passed"
+          }
+        ],
+        "score": 0.6363636363636364
+      },
+      "reason": "4 of 11 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "ab1ca4abf4875c76c0bdeb0ab970268122e6bf6a91b3bb2e1e44698b0a2dd60d",
+      "criterion": "REQ-6.2",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            19,
+            20,
+            83,
+            86,
+            87,
+            88,
+            89,
+            97,
+            101,
+            105,
+            116,
+            117,
+            122,
+            124,
+            125,
+            133,
+            134
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 10,
+          "killed": 7,
+          "probed": 12,
+          "unpinned": 2
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_rejection_records_a_reason",
+            "status": "passed"
+          }
+        ],
+        "score": 0.7
+      },
+      "reason": "3 of 10 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    },
+    {
+      "content_hash": "48b77da454a37c209773f65220346ea9243e55822de8566ccfed7b3fa8c43dfa",
+      "criterion": "REQ-6.3",
+      "evidence": {
+        "covered": {
+          "refund.py": [
+            83,
+            86,
+            87,
+            88,
+            89,
+            93,
+            101,
+            105,
+            116,
+            117,
+            122,
+            124,
+            127,
+            128,
+            129,
+            130
+          ]
+        },
+        "missed": [
+          {
+            "caught_by": [
+              "REQ-1.4",
+              "REQ-1.5"
+            ],
+            "description": "- to +",
+            "line": 105,
+            "operator": "arithmetic",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.3"
+            ],
+            "description": "<= to <",
+            "line": 122,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-1.5"
+            ],
+            "description": "> to >=",
+            "line": 124,
+            "operator": "comparison",
+            "path": "refund.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.2"
+            ],
+            "description": "return None instead",
+            "line": 130,
+            "operator": "return",
+            "path": "refund.py"
+          }
+        ],
+        "mutants": {
+          "discriminating": 11,
+          "killed": 7,
+          "probed": 12,
+          "unpinned": 1
+        },
+        "oracles": [
+          {
+            "nodeid": "test_refund.py::test_refunds_are_kept_in_order",
+            "status": "passed"
+          }
+        ],
+        "score": 0.6363636363636364
+      },
+      "reason": "4 of 11 detectable breakages went unnoticed by this promise's own oracles",
+      "verdict": "weak"
+    }
+  ],
+  "excluded": [],
+  "kept_version": "0.1.0",
+  "schema_version": 1,
+  "settings": {
+    "cap": 12,
+    "seed": 0,
+    "threshold": 1.0
+  },
+  "sources": {
+    "refund.py": "f66ddc49ffbf3a152fce630df6a3c6a05afdb60de18127e227a53d1766c77305"
+  },
+  "summary": {
+    "broken": 0,
+    "kept": 4,
+    "promises": 25,
+    "stale": 0,
+    "unproven": 0,
+    "weak": 21
+  },
+  "unpinned": [
+    {
+      "covered_by": [
+        "REQ-1.1",
+        "REQ-1.2",
+        "REQ-1.3",
+        "REQ-1.4",
+        "REQ-1.5",
+        "REQ-2.4",
+        "REQ-6.2"
+      ],
+      "description": "body of __init__ replaced by return None",
+      "line": 19,
+      "operator": "stub",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.1",
+        "REQ-3.2",
+        "REQ-3.4",
+        "REQ-4.2",
+        "REQ-4.3",
+        "REQ-4.4",
+        "REQ-4.5",
+        "REQ-5.1",
+        "REQ-5.3"
+      ],
+      "description": "1 to 0",
+      "line": 25,
+      "operator": "literal",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.1",
+        "REQ-3.2",
+        "REQ-3.4",
+        "REQ-4.2",
+        "REQ-4.3",
+        "REQ-4.4",
+        "REQ-4.5",
+        "REQ-5.1",
+        "REQ-5.3"
+      ],
+      "description": "1 to 2",
+      "line": 25,
+      "operator": "literal",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.1",
+        "REQ-3.4",
+        "REQ-4.1",
+        "REQ-4.2",
+        "REQ-4.3",
+        "REQ-4.4",
+        "REQ-4.5"
+      ],
+      "description": "<= to <",
+      "line": 30,
+      "operator": "comparison",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-4.1",
+        "REQ-4.2",
+        "REQ-4.3",
+        "REQ-4.4",
+        "REQ-4.5"
+      ],
+      "description": "condition forced to False",
+      "line": 30,
+      "operator": "guard",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-4.1"
+      ],
+      "description": "0 to 1",
+      "line": 30,
+      "operator": "literal",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-4.1"
+      ],
+      "description": "condition forced to False",
+      "line": 33,
+      "operator": "guard",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.1",
+        "REQ-3.4",
+        "REQ-5.1",
+        "REQ-5.2",
+        "REQ-5.3",
+        "REQ-5.4"
+      ],
+      "description": "or to and",
+      "line": 40,
+      "operator": "boolean",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.1",
+        "REQ-3.4",
+        "REQ-5.1",
+        "REQ-5.2",
+        "REQ-5.3",
+        "REQ-5.4"
+      ],
+      "description": "<= to <",
+      "line": 40,
+      "operator": "comparison",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-5.2",
+        "REQ-5.4"
+      ],
+      "description": "<= to <",
+      "line": 40,
+      "operator": "comparison",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-5.2",
+        "REQ-5.4"
+      ],
+      "description": "condition forced to False",
+      "line": 40,
+      "operator": "guard",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-5.4"
+      ],
+      "description": "0 to 1",
+      "line": 40,
+      "operator": "literal",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-5.4"
+      ],
+      "description": "0 to 1",
+      "line": 40,
+      "operator": "literal",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.1",
+        "REQ-3.4",
+        "REQ-5.1",
+        "REQ-5.2",
+        "REQ-5.3"
+      ],
+      "description": ">= to >",
+      "line": 42,
+      "operator": "comparison",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-5.2"
+      ],
+      "description": "condition forced to False",
+      "line": 42,
+      "operator": "guard",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.3"
+      ],
+      "description": "<= to <",
+      "line": 50,
+      "operator": "comparison",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.3"
+      ],
+      "description": "% to *",
+      "line": 59,
+      "operator": "arithmetic",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.3"
+      ],
+      "description": "* to /",
+      "line": 59,
+      "operator": "arithmetic",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-3.3"
+      ],
+      "description": "True to False",
+      "line": 60,
+      "operator": "literal",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-1.1",
+        "REQ-1.2",
+        "REQ-1.3",
+        "REQ-1.4",
+        "REQ-1.5",
+        "REQ-2.1",
+        "REQ-2.2",
+        "REQ-2.3",
+        "REQ-2.4",
+        "REQ-6.1",
+        "REQ-6.2",
+        "REQ-6.3"
+      ],
+      "description": "< to <=",
+      "line": 83,
+      "operator": "comparison",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-1.2",
+        "REQ-1.3"
+      ],
+      "description": "condition forced to False",
+      "line": 83,
+      "operator": "guard",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-1.1",
+        "REQ-1.2",
+        "REQ-1.3"
+      ],
+      "description": "condition forced to False",
+      "line": 117,
+      "operator": "guard",
+      "path": "refund.py"
+    },
+    {
+      "covered_by": [
+        "REQ-1.2",
+        "REQ-1.3"
+      ],
+      "description": "condition forced to True",
+      "line": 122,
+      "operator": "guard",
+      "path": "refund.py"
+    }
+  ]
+}

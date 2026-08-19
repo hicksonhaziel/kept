@@ -1,0 +1,34 @@
+{
+  "name": "kept",
+  "description": "Builds kept, and is held to kept's own evidence ledger while doing it.",
+  "prompt": "You are working on kept, an offline deterministic tool that proves per acceptance criterion which promises the code keeps. Follow .kiro/steering. Never present a simulated or hard-coded result as working: that is the exact failure mode kept detects. No model may participate in producing a verdict.",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "resources": [
+    "file://.kiro/steering/*.md",
+    "file://.kiro/specs/*/requirements.md",
+    "file://README.md",
+    "file://docs/adr/*.md"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "uv run kept parse --quiet",
+        "timeout_ms": 60000
+      }
+    ],
+    "postToolUse": [
+      {
+        "matcher": "write",
+        "command": ".kiro/hooks/parse-promises.sh",
+        "timeout_ms": 60000
+      }
+    ],
+    "stop": [
+      {
+        "command": ".kiro/hooks/verify-promises.sh",
+        "timeout_ms": 900000
+      }
+    ]
+  }
+}

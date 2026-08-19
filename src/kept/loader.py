@@ -6,10 +6,11 @@ forward slashes, so no absolute path reaches an artefact.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
-from kept.diagnostics import Diagnostic, sort_key
+from kept.diagnostics import Diagnostic, Severity, sort_key
 from kept.ears.parser import parse_criterion
 from kept.ir import Criterion, Requirement, SpecDocument, build_requirement
 from kept.markdown import extract
@@ -114,16 +115,80 @@ def load_document(path: Path, *, root: Path, name: str | None = None) -> LoadRes
 
 def load_all(root: Path) -> LoadResult:
     """Parse every specification found beneath `.kiro/specs`."""
+    return load(root)
+
+
+def load(root: Path, *, specs: Sequence[Path] | None = None) -> LoadResult:
+    """Parse the given specifications, or discover them under `.kiro/specs`.
+
+    Args:
+        root: The project root, used to relativise paths.
+        specs: Explicit requirements documents. Any markdown file with numbered
+            criteria under an "Acceptance Criteria" heading works; it need not
+            live in `.kiro/specs`. When omitted, kept discovers Kiro's specs.
+    """
+    paths = tuple(_resolve(path, root) for path in specs) if specs else discover_spec_files(root)
+
     documents: list[SpecDocument] = []
     diagnostics: list[Diagnostic] = []
 
-    for path in discover_spec_files(root):
+    for path in paths:
         result = load_document(path, root=root)
         documents.extend(result.documents)
         diagnostics.extend(result.diagnostics)
 
     documents.sort(key=lambda document: document.path)
+    diagnostics.extend(_duplicate_identifiers(documents))
+
     return LoadResult(
         documents=tuple(documents),
         diagnostics=tuple(sorted(diagnostics, key=sort_key)),
     )
+
+
+def _resolve(path: Path, root: Path) -> Path:
+    """Interpret a spec path against the project root, then the caller's directory.
+
+    Root-relative is the useful reading, since `--root` names the project being
+    verified. Falling back to the working directory keeps a path that the user can
+    see on their own shell from being rejected.
+    """
+    if path.is_absolute() or path.is_file():
+        return path
+    candidate = root / path
+    return candidate if candidate.is_file() else path
+
+
+def _duplicate_identifiers(documents: Sequence[SpecDocument]) -> list[Diagnostic]:
+    """Report identifiers claimed by more than one document.
+
+    Identifiers are numbered per document, so two specifications that both open
+    with "Requirement 1" would each produce REQ-1.1. A binding naming that
+    identifier would then be ambiguous, and kept would silently attribute evidence
+    to the wrong promise. Reported as an error rather than resolved by guessing
+    which document was meant.
+    """
+    owners: dict[str, list[SpecDocument]] = {}
+    for document in documents:
+        for criterion in document.criteria:
+            owners.setdefault(criterion.id, []).append(document)
+
+    diagnostics: list[Diagnostic] = []
+    for identifier, claimants in sorted(owners.items()):
+        if len(claimants) < 2:
+            continue
+        names = ", ".join(sorted(document.path for document in claimants))
+        first = claimants[0].criterion_by_id(identifier)
+        diagnostics.append(
+            Diagnostic(
+                code="E003",
+                severity=Severity.ERROR,
+                message=(
+                    f"{identifier} is defined in more than one specification: {names}. "
+                    f"Renumber the requirement headings so each identifier is claimed "
+                    f"once, or verify one specification at a time with --spec."
+                ),
+                span=first.span if first is not None else None,
+            )
+        )
+    return diagnostics

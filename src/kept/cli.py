@@ -15,10 +15,45 @@ from kept.ids import SCHEMA_VERSION, display_hash
 from kept.loader import LoadResult, SpecNotFoundError, load_all, load_document
 from kept.observe import ObservationError
 
+#: Every failure mode that is the user's input rather than a defect in kept.
+_INPUT_ERRORS = (
+    ObservationError,
+    SpecNotFoundError,
+    bindings.BindingsError,
+    ledger.LedgerError,
+)
+
 EXIT_OK = 0
 EXIT_GATE_VIOLATED = 1
 EXIT_USAGE = 2
 EXIT_INTERNAL = 3
+
+
+def _report_spec_errors(errors: tuple[Diagnostic, ...]) -> bool:
+    """Print specification errors and report whether any were found.
+
+    These block the run. Ambiguous input cannot produce a trustworthy verdict, and
+    guessing which reading was meant is exactly what kept must not do.
+    """
+    for diagnostic in errors:
+        print(f"kept: {diagnostic.code} {diagnostic.message}", file=sys.stderr)
+    return bool(errors)
+
+
+def _add_spec_option(command: argparse.ArgumentParser) -> None:
+    """Let the user point at requirements that do not live in `.kiro/specs`."""
+    command.add_argument(
+        "--spec",
+        action="append",
+        type=Path,
+        dest="specs",
+        metavar="PATH",
+        help=(
+            "a requirements document to read. Repeatable. Any markdown file with "
+            "numbered criteria under an 'Acceptance Criteria' heading works. "
+            "Defaults to every .kiro/specs/*/requirements.md"
+        ),
+    )
 
 
 def _add_python_option(command: argparse.ArgumentParser) -> None:
@@ -90,6 +125,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="restrict test collection to this path",
     )
     _add_python_option(bind_command)
+    _add_spec_option(bind_command)
     bind_command.add_argument(
         "--write",
         action="store_true",
@@ -120,6 +156,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     observe_command.add_argument("--tests", help="restrict the test run to this path")
     _add_python_option(observe_command)
+    _add_spec_option(observe_command)
     observe_command.add_argument(
         "--source",
         default=".",
@@ -150,6 +187,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     attack_command.add_argument("--tests", help="restrict the test run to this path")
     _add_python_option(attack_command)
+    _add_spec_option(attack_command)
     attack_command.add_argument(
         "--source",
         default=".",
@@ -207,6 +245,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify_command.add_argument("--tests", help="restrict the test run to this path")
     _add_python_option(verify_command)
+    _add_spec_option(verify_command)
     verify_command.add_argument(
         "--source",
         default=".",
@@ -304,9 +343,14 @@ def _handle_parse(args: argparse.Namespace) -> int:
 
 def _handle_bind(args: argparse.Namespace) -> int:
     try:
-        stage = pipeline.bind(args.root, tests=args.tests, python=args.python)
-    except (ObservationError, bindings.BindingsError) as error:
+        stage = pipeline.bind(
+            args.root, tests=args.tests, python=args.python, specs=args.specs
+        )
+    except _INPUT_ERRORS as error:
         print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if _report_spec_errors(stage.errors):
         return EXIT_USAGE
 
     merged = stage.bindings
@@ -363,10 +407,17 @@ def _handle_bind(args: argparse.Namespace) -> int:
 def _handle_observe(args: argparse.Namespace) -> int:
     try:
         stage = pipeline.observe(
-            args.root, tests=args.tests, source=args.source, python=args.python
+            args.root,
+            tests=args.tests,
+            source=args.source,
+            python=args.python,
+            specs=args.specs,
         )
-    except (ObservationError, bindings.BindingsError) as error:
+    except _INPUT_ERRORS as error:
         print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if _report_spec_errors(stage.bind.errors):
         return EXIT_USAGE
 
     observations = stage.observations.criteria
@@ -443,8 +494,9 @@ def _handle_attack(args: argparse.Namespace) -> int:
             timeout=args.timeout,
             use_cache=args.use_cache,
             python=args.python,
+            specs=args.specs,
         )
-    except (ObservationError, bindings.BindingsError) as error:
+    except _INPUT_ERRORS as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
 
@@ -527,9 +579,13 @@ def _handle_verify(args: argparse.Namespace) -> int:
             use_cache=args.use_cache,
             python=args.python,
             threshold=args.threshold,
+            specs=args.specs,
         )
-    except (ObservationError, bindings.BindingsError, ledger.LedgerError) as error:
+    except _INPUT_ERRORS as error:
         print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if _report_spec_errors(stage.attack.observe.bind.errors):
         return EXIT_USAGE
 
     fresh = stage.ledger

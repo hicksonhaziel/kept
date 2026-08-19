@@ -22,6 +22,7 @@ DIAGNOSTIC_CODES: dict[str, str] = {
     "W001": "lower-case modality found and no upper-case modality present",
     "W002": "numbered item found with no requirement open, so it cannot be identified",
     "W003": "requirement heading carries no number; ordinal position assigned",
+    "E003": "criterion identifier claimed by more than one specification",
 }
 
 

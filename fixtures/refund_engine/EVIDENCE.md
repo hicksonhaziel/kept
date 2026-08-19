@@ -2,7 +2,7 @@
 
 **25 promises · 4 kept · 21 weak**
 
-Commit `34e161d540d923a7fc07ea073ee925c4306f6b15`, kept 0.1.0.
+Commit `68ff7bdcacc7652f33fb908050767ec82baf35ed`, kept 0.1.0.
 
 Produced by `kept verify`. This is **evidence, not proof**: mutation survival is a strong negative signal, but a killed mutant is not a guarantee of correctness.
 

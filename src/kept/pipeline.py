@@ -1,4 +1,4 @@
-"""Wire the stages together: parse, bind, observe.
+"""Wire the stages together: parse, bind, observe, attack, rule.
 
 Thin orchestration. Every decision lives in the pure modules it belongs to; this
 only decides what to call and in what order.
@@ -6,6 +6,7 @@ only decides what to call and in what order.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,8 +16,9 @@ from kept.bindings import Binding, BindingSet, Origin
 from kept.bindings import bindings_path as _bindings_path
 from kept.bindings import load as _load_bindings
 from kept.bindings import merge as _merge_bindings
+from kept.diagnostics import Diagnostic
 from kept.ir import Criterion
-from kept.loader import load_all
+from kept.loader import load as load_specs
 from kept.observe import Report, collect, resolve_interpreter, run, scan_files
 
 
@@ -25,6 +27,11 @@ class BindStage:
     criteria: tuple[Criterion, ...]
     bindings: BindingSet
     report: Report
+    diagnostics: tuple[Diagnostic, ...] = ()
+
+    @property
+    def errors(self) -> tuple[Diagnostic, ...]:
+        return tuple(diagnostic for diagnostic in self.diagnostics if diagnostic.is_error)
 
     @property
     def promises(self) -> tuple[Criterion, ...]:
@@ -85,9 +92,15 @@ class VerifyStage:
     regressions: tuple[ledger_module.Regression, ...]
 
 
-def bind(root: Path, *, tests: str | None = None, python: Path | None = None) -> BindStage:
+def bind(
+    root: Path,
+    *,
+    tests: str | None = None,
+    python: Path | None = None,
+    specs: Sequence[Path] | None = None,
+) -> BindStage:
     """Parse the specification and resolve which oracles claim each criterion."""
-    spec = load_all(root)
+    spec = load_specs(root, specs=specs)
     report = collect(root, tests=tests, python=python)
     manual = _load_bindings(_bindings_path(root))
 
@@ -97,7 +110,12 @@ def bind(root: Path, *, tests: str | None = None, python: Path | None = None) ->
         )
     )
     merged = _merge_bindings(discovered, manual.human_authored())
-    return BindStage(criteria=spec.criteria, bindings=merged, report=report)
+    return BindStage(
+        criteria=spec.criteria,
+        bindings=merged,
+        report=report,
+        diagnostics=spec.diagnostics,
+    )
 
 
 def observe(
@@ -106,9 +124,10 @@ def observe(
     tests: str | None = None,
     source: str = ".",
     python: Path | None = None,
+    specs: Sequence[Path] | None = None,
 ) -> ObserveStage:
     """Run the suite under coverage and gather per-criterion evidence."""
-    spec = load_all(root)
+    spec = load_specs(root, specs=specs)
     result = run(root, tests=tests, source=source, python=python)
     manual = _load_bindings(_bindings_path(root))
 
@@ -118,7 +137,12 @@ def observe(
         )
     )
     merged = _merge_bindings(discovered, manual.human_authored())
-    stage = BindStage(criteria=spec.criteria, bindings=merged, report=result.report)
+    stage = BindStage(
+        criteria=spec.criteria,
+        bindings=merged,
+        report=result.report,
+        diagnostics=spec.diagnostics,
+    )
 
     test_files = frozenset(
         record.nodeid.partition("::")[0] for record in result.report.tests
@@ -152,9 +176,10 @@ def attack_project(
     timeout: float = attack.MIN_TIMEOUT_SECONDS,
     use_cache: bool = True,
     python: Path | None = None,
+    specs: Sequence[Path] | None = None,
 ) -> AttackStage:
     """Observe, then break the covered lines and see which oracles notice."""
-    stage = observe(root, tests=tests, source=source, python=python)
+    stage = observe(root, tests=tests, source=source, python=python, specs=specs)
     covered = stage.covered_by_criterion()
     oracles = stage.oracles_by_criterion()
 
@@ -202,6 +227,7 @@ def verify(
     use_cache: bool = True,
     python: Path | None = None,
     threshold: float = verdict.DEFAULT_THRESHOLD,
+    specs: Sequence[Path] | None = None,
 ) -> VerifyStage:
     """The whole pipeline: parse, bind, observe, attack, rule, ledger."""
     stage = attack_project(
@@ -213,6 +239,7 @@ def verify(
         timeout=timeout,
         use_cache=use_cache,
         python=python,
+        specs=specs,
     )
 
     criteria = {c.id: c.content_hash for c in stage.observe.bind.promises}

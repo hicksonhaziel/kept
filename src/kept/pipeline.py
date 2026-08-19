@@ -16,7 +16,7 @@ from kept.bindings import load as _load_bindings
 from kept.bindings import merge as _merge_bindings
 from kept.ir import Criterion
 from kept.loader import load_all
-from kept.observe import Report, collect, run, scan_files
+from kept.observe import Report, collect, resolve_interpreter, run, scan_files
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,10 +74,10 @@ class AttackStage:
     mutants_available: int
 
 
-def bind(root: Path, *, tests: str | None = None) -> BindStage:
+def bind(root: Path, *, tests: str | None = None, python: Path | None = None) -> BindStage:
     """Parse the specification and resolve which oracles claim each criterion."""
     spec = load_all(root)
-    report = collect(root, tests=tests)
+    report = collect(root, tests=tests, python=python)
     manual = _load_bindings(_bindings_path(root))
 
     discovered = BindingSet(
@@ -89,10 +89,16 @@ def bind(root: Path, *, tests: str | None = None) -> BindStage:
     return BindStage(criteria=spec.criteria, bindings=merged, report=report)
 
 
-def observe(root: Path, *, tests: str | None = None, source: str = ".") -> ObserveStage:
+def observe(
+    root: Path,
+    *,
+    tests: str | None = None,
+    source: str = ".",
+    python: Path | None = None,
+) -> ObserveStage:
     """Run the suite under coverage and gather per-criterion evidence."""
     spec = load_all(root)
-    result = run(root, tests=tests, source=source)
+    result = run(root, tests=tests, source=source, python=python)
     manual = _load_bindings(_bindings_path(root))
 
     discovered = BindingSet(
@@ -134,9 +140,10 @@ def attack_project(
     workers: int = attack.DEFAULT_WORKERS,
     timeout: float = attack.MIN_TIMEOUT_SECONDS,
     use_cache: bool = True,
+    python: Path | None = None,
 ) -> AttackStage:
     """Observe, then break the covered lines and see which oracles notice."""
-    stage = observe(root, tests=tests, source=source)
+    stage = observe(root, tests=tests, source=source, python=python)
     covered = stage.covered_by_criterion()
     oracles = stage.oracles_by_criterion()
 
@@ -168,6 +175,7 @@ def attack_project(
         workers=workers,
         timeout=timeout,
         cache_path=cache_path,
+        python=resolve_interpreter(root, python),
     )
     return AttackStage(observe=stage, result=result, mutants_available=available)
 

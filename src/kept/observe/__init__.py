@@ -9,6 +9,7 @@ from kept.observe.runner import (
     RunResult,
     TestRecord,
     collect,
+    resolve_interpreter,
     run,
 )
 from kept.observe.vacuity import OracleShape, scan_files
@@ -21,6 +22,7 @@ __all__ = [
     "RunResult",
     "TestRecord",
     "collect",
+    "resolve_interpreter",
     "run",
     "scan_files",
 ]

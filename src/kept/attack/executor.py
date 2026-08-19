@@ -137,6 +137,7 @@ def execute(
     workers: int = DEFAULT_WORKERS,
     timeout: float = MIN_TIMEOUT_SECONDS,
     cache_path: Path | None = None,
+    python: Path | None = None,
 ) -> AttackResult:
     """Run every assignment and report which criteria each mutant escaped.
 
@@ -164,7 +165,9 @@ def execute(
             ThreadPoolExecutor(max_workers=worker_count) as executor,
         ):
             for outcome in executor.map(
-                lambda assignment: _probe(assignment, oracles, pool, timeout=timeout),
+                lambda assignment: _probe(
+                    assignment, oracles, pool, timeout=timeout, python=python
+                ),
                 pending,
             ):
                 resolved.append(outcome)
@@ -248,6 +251,7 @@ def _probe(
     pool: queue.Queue[Path],
     *,
     timeout: float,
+    python: Path | None = None,
 ) -> MutantOutcome:
     """Apply one mutant in a borrowed worktree and see which criteria notice."""
     mutant = assignment.mutant
@@ -272,7 +276,7 @@ def _probe(
 
         try:
             target.write_text(mutated, encoding="utf-8")
-            run = run_tests(worktree, nodeids, timeout=timeout)
+            run = run_tests(worktree, nodeids, timeout=timeout, python=python)
         finally:
             target.write_text(original, encoding="utf-8")
     finally:

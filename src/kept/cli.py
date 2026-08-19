@@ -21,6 +21,19 @@ EXIT_USAGE = 2
 EXIT_INTERNAL = 3
 
 
+def _add_python_option(command: argparse.ArgumentParser) -> None:
+    """Let the user name the interpreter that owns the project's dependencies."""
+    command.add_argument(
+        "--python",
+        type=Path,
+        metavar="PATH",
+        help=(
+            "interpreter used to run the project's tests. Defaults to the active "
+            "virtual environment, else the nearest .venv, else kept's own"
+        ),
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="kept",
@@ -76,6 +89,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--tests",
         help="restrict test collection to this path",
     )
+    _add_python_option(bind_command)
     bind_command.add_argument(
         "--write",
         action="store_true",
@@ -105,6 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="project root holding .kiro/specs and .kept (default: current directory)",
     )
     observe_command.add_argument("--tests", help="restrict the test run to this path")
+    _add_python_option(observe_command)
     observe_command.add_argument(
         "--source",
         default=".",
@@ -134,6 +149,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="project root holding .kiro/specs and .kept (default: current directory)",
     )
     attack_command.add_argument("--tests", help="restrict the test run to this path")
+    _add_python_option(attack_command)
     attack_command.add_argument(
         "--source",
         default=".",
@@ -200,7 +216,7 @@ def _handle_parse(args: argparse.Namespace) -> int:
 
 def _handle_bind(args: argparse.Namespace) -> int:
     try:
-        stage = pipeline.bind(args.root, tests=args.tests)
+        stage = pipeline.bind(args.root, tests=args.tests, python=args.python)
     except (ObservationError, bindings.BindingsError) as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
@@ -258,7 +274,9 @@ def _handle_bind(args: argparse.Namespace) -> int:
 
 def _handle_observe(args: argparse.Namespace) -> int:
     try:
-        stage = pipeline.observe(args.root, tests=args.tests, source=args.source)
+        stage = pipeline.observe(
+            args.root, tests=args.tests, source=args.source, python=args.python
+        )
     except (ObservationError, bindings.BindingsError) as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
@@ -336,6 +354,7 @@ def _handle_attack(args: argparse.Namespace) -> int:
             workers=args.workers,
             timeout=args.timeout,
             use_cache=args.use_cache,
+            python=args.python,
         )
     except (ObservationError, bindings.BindingsError) as error:
         print(f"kept: {error}", file=sys.stderr)

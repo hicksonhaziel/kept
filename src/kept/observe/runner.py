@@ -34,6 +34,47 @@ class ObservationError(RuntimeError):
     """Raised when a target project's tests could not be collected or run."""
 
 
+def resolve_interpreter(root: Path, explicit: str | Path | None = None) -> Path:
+    """Find the interpreter that can run the target project's tests.
+
+    kept must never run a project's tests with its own interpreter. kept may be
+    installed as an isolated tool, and even when it is not, the project's tests
+    need the project's dependencies, which only the project's environment has.
+
+    Search order, first hit wins:
+
+    1. an interpreter given explicitly
+    2. the currently activated virtual environment
+    3. `.venv` in the project root
+    4. `.venv` in the nearest ancestor directory that has one
+    5. the interpreter running kept, as a last resort
+    """
+    if explicit is not None:
+        return Path(explicit)
+
+    activated = os.environ.get("VIRTUAL_ENV")
+    if activated:
+        found = _interpreter_in(Path(activated))
+        if found is not None:
+            return found
+
+    resolved = root.resolve()
+    for directory in (resolved, *resolved.parents):
+        found = _interpreter_in(directory / ".venv")
+        if found is not None:
+            return found
+
+    return Path(sys.executable)
+
+
+def _interpreter_in(environment: Path) -> Path | None:
+    for relative in ("bin/python", "bin/python3", "Scripts/python.exe"):
+        candidate = environment / relative
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 @dataclass(frozen=True, slots=True)
 class TestRecord:
     """One test as pytest saw it."""
@@ -97,6 +138,7 @@ def run_tests(
     nodeids: Sequence[str],
     *,
     timeout: float | None = None,
+    python: Path | None = None,
 ) -> TestRun:
     """Run exactly the given tests, with no coverage instrumentation.
 
@@ -106,8 +148,9 @@ def run_tests(
     if not nodeids:
         return TestRun(report=Report())
 
+    interpreter = python if python is not None else resolve_interpreter(root)
     command = [
-        sys.executable,
+        str(interpreter),
         "-m",
         "pytest",
         "-q",
@@ -143,23 +186,32 @@ def run_tests(
     return TestRun(report=_parse_report(payload), exit_code=completed.returncode)
 
 
-def collect(root: Path, *, tests: str | None = None) -> Report:
+def collect(root: Path, *, tests: str | None = None, python: Path | None = None) -> Report:
     """Collect tests without running them, to harvest bindings."""
-    command = [sys.executable, "-m", "pytest", *_COLLECT_ARGS]
+    interpreter = python if python is not None else resolve_interpreter(root)
+    command = [str(interpreter), "-m", "pytest", *_COLLECT_ARGS]
     if tests is not None:
         command.append(tests)
-    return _invoke(root, command, expect_report=True).report
+    return _invoke(root, command, interpreter, expect_report=True).report
 
 
-def run(root: Path, *, tests: str | None = None, source: str = ".") -> RunResult:
+def run(
+    root: Path,
+    *,
+    tests: str | None = None,
+    source: str = ".",
+    python: Path | None = None,
+) -> RunResult:
     """Run the suite under coverage with per-test contexts."""
+    interpreter = python if python is not None else resolve_interpreter(root)
+
     with tempfile.TemporaryDirectory() as scratch:
         rcfile = Path(scratch) / "coverage.rc"
         rcfile.write_text(_COVERAGE_RC.format(source=source), encoding="utf-8")
         datafile = Path(scratch) / "coverage.data"
 
         command = [
-            sys.executable,
+            str(interpreter),
             "-m",
             "coverage",
             "run",
@@ -174,7 +226,7 @@ def run(root: Path, *, tests: str | None = None, source: str = ".") -> RunResult
         if tests is not None:
             command.append(tests)
 
-        result = _invoke(root, command, expect_report=True)
+        result = _invoke(root, command, interpreter, expect_report=True)
         coverage = _read_coverage(datafile)
 
     return RunResult(
@@ -185,7 +237,13 @@ def run(root: Path, *, tests: str | None = None, source: str = ".") -> RunResult
     )
 
 
-def _invoke(root: Path, command: list[str], *, expect_report: bool) -> RunResult:
+def _invoke(
+    root: Path,
+    command: list[str],
+    interpreter: Path,
+    *,
+    expect_report: bool,
+) -> RunResult:
     if not root.is_dir():
         msg = f"no such directory: {root}"
         raise ObservationError(msg)
@@ -206,12 +264,7 @@ def _invoke(root: Path, command: list[str], *, expect_report: bool) -> RunResult
         output = (completed.stdout or "") + (completed.stderr or "")
 
         if expect_report and not destination.is_file():
-            msg = (
-                f"pytest produced no report in {root} (exit {completed.returncode}). "
-                f"Check that the project has tests and that pytest can import them."
-                + (f"\n{output.strip()[-2000:]}" if output.strip() else "")
-            )
-            raise ObservationError(msg)
+            raise ObservationError(_failure_message(root, interpreter, completed, output))
 
         payload = json.loads(destination.read_text(encoding="utf-8"))
 
@@ -220,6 +273,43 @@ def _invoke(root: Path, command: list[str], *, expect_report: bool) -> RunResult
         coverage=CoverageResult(),
         exit_code=completed.returncode,
         output=output,
+    )
+
+
+def _failure_message(
+    root: Path,
+    interpreter: Path,
+    completed: subprocess.CompletedProcess[str],
+    output: str,
+) -> str:
+    """Explain a failed run in terms of the fix, not the symptom."""
+    trimmed = output.strip()
+
+    if "No module named 'pytest'" in trimmed or "No module named pytest" in trimmed:
+        return (
+            f"The interpreter kept chose cannot import pytest:\n"
+            f"    {interpreter}\n\n"
+            f"kept runs your project's tests with your project's interpreter, because "
+            f"the tests need your project's dependencies. Pick one:\n"
+            f"    kept ... --python /path/to/your/.venv/bin/python\n"
+            f"    activate the project's virtual environment first\n"
+            f"    run from a directory whose .venv has pytest installed"
+        )
+
+    if "No module named 'coverage'" in trimmed:
+        return (
+            f"The interpreter kept chose cannot import coverage:\n"
+            f"    {interpreter}\n\n"
+            f"Install coverage into that environment, or point kept at one that has "
+            f"it with --python."
+        )
+
+    return (
+        f"pytest produced no report in {root} (exit {completed.returncode}).\n"
+        f"    interpreter: {interpreter}\n\n"
+        f"Check that the project has tests, that pytest can import them, and that "
+        f"the interpreter above is the one your project uses. Override it with "
+        f"--python if not." + (f"\n\n{trimmed[-2000:]}" if trimmed else "")
     )
 
 

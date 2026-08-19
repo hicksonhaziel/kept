@@ -12,7 +12,8 @@ from typing import TextIO
 from kept import __version__, attack, bindings, ledger, pipeline, report, verdict
 from kept.diagnostics import Diagnostic
 from kept.ids import SCHEMA_VERSION, display_hash
-from kept.loader import LoadResult, SpecNotFoundError, load_all, load_document
+from kept.ir import Criterion
+from kept.loader import LoadResult, SpecNotFoundError, load, load_all, load_document
 from kept.observe import ObservationError
 
 #: Every failure mode that is the user's input rather than a defect in kept.
@@ -317,6 +318,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify_command.set_defaults(handler=_handle_verify)
 
+    prompt_command = subcommands.add_parser(
+        "prompt",
+        help="emit a remediation brief for one promise, from the committed ledger",
+        description=(
+            "Restate the recorded evidence for one promise and name the change that "
+            "would answer it. Reads the ledger; runs no tests and reaches no "
+            "verdict. The output is a suggestion for a human or an agent to review, "
+            "rendered deterministically with no model involved."
+        ),
+    )
+    prompt_command.add_argument(
+        "criterion",
+        help="the promise to brief on, as it appears in the ledger (for example REQ-2.1)",
+    )
+    prompt_command.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="project root holding .kept and the specification (default: current directory)",
+    )
+    _add_spec_option(prompt_command)
+    prompt_command.set_defaults(handler=_handle_prompt)
+
     return parser
 
 
@@ -466,7 +490,7 @@ def _handle_observe(args: argparse.Namespace) -> int:
             note = "" if oracle.has_assertion else "  [asserts nothing]"
             write(f"      {oracle.status:<8} {oracle.nodeid}{note}\n")
         for path, lines in entry.covered:
-            write(f"        {path}: {_ranges(lines)}\n")
+            write(f"        {path}: {report.line_ranges(lines)}\n")
 
     for label, criteria in problems.items():
         _write_list(write, label.replace("_", " "), tuple(criteria))
@@ -654,6 +678,61 @@ def _handle_verify(args: argparse.Namespace) -> int:
     return _gate(args.gate, stage)
 
 
+def _handle_prompt(args: argparse.Namespace) -> int:
+    path = ledger.ledger_path(args.root)
+    try:
+        stored = ledger.load(path)
+    except ledger.LedgerError as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if stored is None:
+        print(
+            f"kept: no ledger at {path}. Run `kept verify --write` first: a brief "
+            f"restates recorded evidence and invents none.",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
+
+    try:
+        rendered = report.render_brief(
+            stored,
+            args.criterion,
+            criterion=_criterion_text(args),
+            command=_recheck_command(args),
+            at_commit=ledger.current_commit(args.root),
+        )
+    except report.UnknownCriterionError as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(rendered, end="")
+    return EXIT_OK
+
+
+def _criterion_text(args: argparse.Namespace) -> Criterion | None:
+    """The parsed criterion, so the brief can quote the promise.
+
+    Absence is not fatal. A brief built only from the ledger is still honest; it
+    just cannot show the wording.
+    """
+    try:
+        result = load(args.root, specs=args.specs)
+    except (SpecNotFoundError, OSError):
+        return None
+    for criterion in result.criteria:
+        if criterion.id == args.criterion:
+            return criterion
+    return None
+
+
+def _recheck_command(args: argparse.Namespace) -> str:
+    parts = ["kept verify", f"--root {args.root}"]
+    parts += [f"--spec {spec}" for spec in (args.specs or ())]
+    parts.append("--write")
+    return " ".join(parts)
+
+
 def _write_drift(write: Callable[[str], int], stage: pipeline.VerifyStage) -> None:
     drift = stage.drift
     if drift.stale:
@@ -691,22 +770,6 @@ def _write_list(write: Callable[[str], int], heading: str, items: tuple[str, ...
     write(f"\n{heading}\n")
     for item in items:
         write(f"      {item}\n")
-
-
-def _ranges(lines: tuple[int, ...]) -> str:
-    """Render line numbers compactly: 3-5, 9, 12-14."""
-    if not lines:
-        return "none"
-    groups: list[tuple[int, int]] = []
-    start = previous = lines[0]
-    for line in lines[1:]:
-        if line == previous + 1:
-            previous = line
-            continue
-        groups.append((start, previous))
-        start = previous = line
-    groups.append((start, previous))
-    return ", ".join(str(a) if a == b else f"{a}-{b}" for a, b in groups)
 
 
 def _render_json(result: LoadResult) -> str:

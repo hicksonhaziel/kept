@@ -34,7 +34,20 @@ kept bind      which test claims to verify each promise
 kept observe   which lines each promise's tests actually execute
 kept attack    which breakages those tests fail to notice
 kept verify    the verdict on every promise, plus the evidence ledger
+kept prompt    a remediation brief for one promise, rendered from the ledger
 ```
+
+`kept prompt REQ-1.1` restates the recorded evidence for one promise and names the
+change that would answer it — for a human, or for an agent to act on:
+
+```bash
+uv run kept verify --root fixtures/refund_engine --write
+uv run kept prompt REQ-1.1 --root fixtures/refund_engine
+```
+
+It reads the ledger, runs no tests, reaches no verdict, and consults no model. It
+is a suggestion, and it says so in its own text. Only `kept verify` moves a
+verdict. See [ADR-0005](docs/adr/0005-the-brief-is-outside-the-verification-path.md).
 
 ## Scope
 

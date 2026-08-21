@@ -35,8 +35,8 @@ kept has to be installed into the environment your tests run in, because the
 a dev dependency, not a standalone tool:
 
 ```bash
-uv add --dev "kept-cli @ git+https://github.com/hicksonhaziel/kept"
-# or: pip install "kept-cli @ git+https://github.com/hicksonhaziel/kept"
+uv add --dev kept-cli
+# or: pip install kept-cli
 ```
 
 Then, once:

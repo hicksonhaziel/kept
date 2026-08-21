@@ -8,6 +8,24 @@ An offline, deterministic CLI that reads your acceptance criteria, binds each on
 25 promises · 4 kept · 21 weak
 ```
 
+## kept, on kept
+
+kept audits its own promises in CI and publishes the result, weak spots included:
+
+```
+51 promises · 3 kept · 46 weak · 2 unproven
+```
+
+See [EVIDENCE.md](EVIDENCE.md). Two of those promises have no test at all and say
+so; forty-six have tests that pass without noticing a change kept made to the code
+they cover. That is an uncomfortable number to publish, and it is the number.
+
+Pointing kept at itself for the first time also found two defects that had made the
+tool's own output untrustworthy — mutants that were never imported, and mutants that
+were counted as killed without ever running. Before the fix kept reported 26 of its
+own promises as KEPT. That figure was fiction. See
+[the journal](docs/journal/2026-08-21.md).
+
 > **This README is a placeholder.** Full documentation is being written. What is here is accurate; it is just not complete.
 
 ## Try it

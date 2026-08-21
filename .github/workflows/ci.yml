@@ -36,6 +36,12 @@ jobs:
       - name: Self-parse
         run: uv run kept parse
 
+      # kept verifies itself against its own committed ledger. Its WEAK verdicts
+      # are published rather than suppressed, so the gate is no-regression: this
+      # step fails when a promise loses ground, not because the number is ugly.
+      - name: Self-verify
+        run: uv run kept verify --root . --gate no-regression
+
       # The control fixture is an honest implementation: every promise must reach
       # KEPT. This is what shows kept does not simply cry wolf.
       - name: Verify the control fixture

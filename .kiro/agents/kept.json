@@ -30,5 +30,13 @@
         "timeout_ms": 900000
       }
     ]
+  },
+  
+  "mcpServers": {
+    "kept": {
+      "command": "uv",
+      "args": ["run", "kept", "serve", "--root", "fixtures/refund_engine"]
+    }
   }
+
 }

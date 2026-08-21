@@ -87,3 +87,7 @@ class TestIdentifiers:
         # which is what makes evidence survive an edit elsewhere (REQ-3.2).
         assert criterion_id(4, 1) == "REQ-4.1"
         assert criterion_id(3, 99) == "REQ-3.99"
+        # One is the first legal value at both levels, not a rejected edge. Without
+        # this the off-by-one that rejects requirement 1 goes unnoticed.
+        assert criterion_id(1, 1) == "REQ-1.1"
+        assert requirement_id(1) == "REQ-1"

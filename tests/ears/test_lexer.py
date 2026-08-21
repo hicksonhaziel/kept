@@ -84,7 +84,12 @@ class TestSeparators:
 
     @pytest.mark.verifies("REQ-1.6")
     def test_exactly_one_end_of_input_token_is_emitted(self) -> None:
-        assert [token.kind for token in lex("a b c")].count(TokenKind.EOF) == 1
+        tokens = lex("a b c")
+        assert [token.kind for token in tokens].count(TokenKind.EOF) == 1
+        # Exactly one, and it terminates a stream that still holds the words: a
+        # lexer that emitted nothing else would also satisfy a bare count of one.
+        assert [token.kind for token in tokens] == [TokenKind.WORD] * 3 + [TokenKind.EOF]
+        assert tokens[-1].kind is TokenKind.EOF
 
     @pytest.mark.verifies("REQ-1.6")
     def test_empty_input_yields_only_end_of_input(self) -> None:

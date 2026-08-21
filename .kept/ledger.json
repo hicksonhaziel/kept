@@ -1,5 +1,5 @@
 {
-  "commit": "44fcef6067b9874a864ecdb74fa2242d9122add6",
+  "commit": "528e1e2aa8c596e446f4c2e53654bd718a267dbf",
   "criteria": [
     {
       "content_hash": "8a9babd6be9fb0d3f11fdddf1dd2b7f2375b5e2a0553ed7f373eed1fb496c835",
@@ -98,6 +98,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -189,6 +190,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -213,7 +215,8 @@
             "caught_by": [
               "REQ-1.1",
               "REQ-1.2",
-              "REQ-1.5"
+              "REQ-1.5",
+              "REQ-1.6"
             ],
             "description": "< to >",
             "line": 28,
@@ -226,6 +229,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -585,79 +589,6 @@
         "missed": [
           {
             "caught_by": [
-              "REQ-1.1",
-              "REQ-1.4",
-              "REQ-1.5",
-              "REQ-1.8",
-              "REQ-2.11",
-              "REQ-2.12",
-              "REQ-2.14",
-              "REQ-2.15",
-              "REQ-2.2",
-              "REQ-2.3",
-              "REQ-2.4",
-              "REQ-2.5",
-              "REQ-2.6",
-              "REQ-2.7",
-              "REQ-3.4",
-              "REQ-5.3",
-              "REQ-5.4"
-            ],
-            "description": "0 to 1",
-            "line": 25,
-            "operator": "literal",
-            "path": "src/kept/ears/lexer.py"
-          },
-          {
-            "caught_by": [
-              "REQ-1.1",
-              "REQ-1.2",
-              "REQ-1.5"
-            ],
-            "description": "< to >",
-            "line": 28,
-            "operator": "comparison",
-            "path": "src/kept/ears/lexer.py"
-          },
-          {
-            "caught_by": [
-              "REQ-1.1",
-              "REQ-1.2",
-              "REQ-1.4",
-              "REQ-1.5",
-              "REQ-1.7",
-              "REQ-1.8",
-              "REQ-2.1",
-              "REQ-2.10",
-              "REQ-2.11",
-              "REQ-2.12",
-              "REQ-2.14",
-              "REQ-2.15",
-              "REQ-2.2",
-              "REQ-2.3",
-              "REQ-2.4",
-              "REQ-2.5",
-              "REQ-2.6",
-              "REQ-2.7",
-              "REQ-2.8",
-              "REQ-2.9",
-              "REQ-3.1",
-              "REQ-3.3",
-              "REQ-3.4",
-              "REQ-3.6",
-              "REQ-4.5",
-              "REQ-5.1",
-              "REQ-5.4",
-              "REQ-5.5",
-              "REQ-6.2"
-            ],
-            "description": "condition forced to True",
-            "line": 31,
-            "operator": "guard",
-            "path": "src/kept/ears/lexer.py"
-          },
-          {
-            "caught_by": [
               "REQ-1.8",
               "REQ-2.11"
             ],
@@ -680,7 +611,7 @@
         ],
         "mutants": {
           "discriminating": 12,
-          "killed": 7,
+          "killed": 10,
           "probed": 12,
           "unpinned": 0
         },
@@ -698,9 +629,9 @@
             "status": "passed"
           }
         ],
-        "score": 0.5833333333333334
+        "score": 0.8333333333333334
       },
-      "reason": "5 of 12 detectable breakages went unnoticed by this promise's own oracles",
+      "reason": "2 of 12 detectable breakages went unnoticed by this promise's own oracles",
       "verdict": "weak"
     },
     {
@@ -815,6 +746,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -1056,6 +988,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -2357,6 +2290,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -2557,6 +2491,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -2749,6 +2684,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -3310,6 +3246,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -3336,6 +3273,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -4194,6 +4132,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -4281,22 +4220,10 @@
             43
           ]
         },
-        "missed": [
-          {
-            "caught_by": [
-              "REQ-3.7",
-              "REQ-6.5",
-              "REQ-6.6"
-            ],
-            "description": "< to <=",
-            "line": 32,
-            "operator": "comparison",
-            "path": "src/kept/ids.py"
-          }
-        ],
+        "missed": [],
         "mutants": {
           "discriminating": 8,
-          "killed": 7,
+          "killed": 8,
           "probed": 12,
           "unpinned": 4
         },
@@ -4306,10 +4233,10 @@
             "status": "passed"
           }
         ],
-        "score": 0.875
+        "score": 1.0
       },
-      "reason": "1 of 8 detectable breakages went unnoticed by this promise's own oracles",
-      "verdict": "weak"
+      "reason": null,
+      "verdict": "kept"
     },
     {
       "content_hash": "4ad46b66f2062dff87cb97b238758679ef47b633a6ecf97275b934c5cc885b48",
@@ -4426,6 +4353,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -4835,6 +4763,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -5327,6 +5256,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -5353,6 +5283,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -5716,6 +5647,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -5742,6 +5674,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -6352,6 +6285,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -6753,6 +6687,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -6779,6 +6714,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -7141,6 +7077,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -7167,6 +7104,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -7864,6 +7802,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -8071,6 +8010,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -8097,6 +8037,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -8287,6 +8228,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -8802,6 +8744,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -9216,6 +9159,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -9242,6 +9186,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -9652,6 +9597,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -10018,6 +9964,7 @@
               "REQ-1.1",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.8",
               "REQ-2.11",
               "REQ-2.12",
@@ -10044,6 +9991,7 @@
               "REQ-1.2",
               "REQ-1.4",
               "REQ-1.5",
+              "REQ-1.6",
               "REQ-1.7",
               "REQ-1.8",
               "REQ-2.1",
@@ -10421,11 +10369,11 @@
   },
   "summary": {
     "broken": 0,
-    "kept": 3,
+    "kept": 4,
     "promises": 51,
     "stale": 0,
     "unproven": 2,
-    "weak": 46
+    "weak": 45
   },
   "unpinned": [
     {

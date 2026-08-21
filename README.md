@@ -13,11 +13,11 @@ An offline, deterministic CLI that reads your acceptance criteria, binds each on
 kept audits its own promises in CI and publishes the result, weak spots included:
 
 ```
-51 promises · 3 kept · 46 weak · 2 unproven
+51 promises · 4 kept · 45 weak · 2 unproven
 ```
 
 See [EVIDENCE.md](EVIDENCE.md). Two of those promises have no test at all and say
-so; forty-six have tests that pass without noticing a change kept made to the code
+so; forty-five have tests that pass without noticing a change kept made to the code
 they cover. That is an uncomfortable number to publish, and it is the number.
 
 Pointing kept at itself for the first time also found two defects that had made the

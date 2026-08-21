@@ -61,6 +61,10 @@ class MutantOutcome:
     survived: tuple[str, ...] = ()
     timed_out: bool = False
     cached: bool = False
+    #: False when the mutant was never run: it would not build, or it was
+    #: textually identical to the original. Such a mutant is evidence about
+    #: nothing and is excluded from every count.
+    executed: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -69,6 +73,7 @@ class MutantOutcome:
             "survived": list(self.survived),
             "timed_out": self.timed_out,
             "cached": self.cached,
+            "executed": self.executed,
         }
 
 
@@ -98,18 +103,25 @@ class AttackResult:
 class _Cache:
     """Per (mutant, criterion) results, keyed by everything that could change them."""
 
+    #: Bumped when a stored result would mean something different today. Version 1
+    #: recorded mutants that were never run as killed, and put the mutated file
+    #: where an installed package shadowed it, so every entry it holds is suspect.
+    VERSION = 2
+
     def __init__(self, path: Path | None) -> None:
         self._path = path
         self._entries: dict[str, bool] = {}
         if path is not None and path.is_file():
             try:
                 loaded = json.loads(path.read_text(encoding="utf-8"))
+                if int(loaded.get("version", 1)) != self.VERSION:
+                    loaded = {}
                 self._entries = {
                     key: bool(value)
                     for key, value in loaded.get("killed", {}).items()
                     if isinstance(key, str)
                 }
-            except (OSError, json.JSONDecodeError):
+            except (OSError, json.JSONDecodeError, TypeError, ValueError):
                 # A damaged cache is discarded, never trusted. It is only ever a
                 # speed-up, so losing it costs time and nothing else.
                 self._entries = {}
@@ -124,7 +136,7 @@ class _Cache:
         if self._path is None:
             return
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        payload = {"killed": dict(sorted(self._entries.items()))}
+        payload = {"version": self.VERSION, "killed": dict(sorted(self._entries.items()))}
         self._path.write_text(json.dumps(payload, sort_keys=True, indent=2), encoding="utf-8")
 
 
@@ -264,6 +276,20 @@ def _partition(
     return pending, resolved
 
 
+def _import_roots(worktree: Path, relative: str) -> tuple[Path, ...]:
+    """Where the mutated module must be imported from, ahead of anything installed.
+
+    Walks out of the package to the first directory that is not itself a package,
+    which is the directory that has to be on the import path. Without this, a
+    project installed into the environment — every src-layout project, kept
+    included — imports the original module and no mutant is ever noticed.
+    """
+    directory = (worktree / relative).parent
+    while (directory / "__init__.py").is_file() and directory != worktree:
+        directory = directory.parent
+    return (directory,) if directory != worktree else (worktree,)
+
+
 def _probe(
     assignment: Assignment,
     oracles: Mapping[str, tuple[str, ...]],
@@ -283,19 +309,26 @@ def _probe(
         try:
             mutated = operators.apply(original, mutant.index)
         except Exception:
-            # Any CST failure means this is not a usable mutant, not that kept
-            # should stop. Counted as killed so it cannot inflate the survivors.
-            return MutantOutcome(mutant=mutant, killed=assignment.criteria)
+            # A mutant kept cannot build was never run, so it is evidence about
+            # nothing. Recording it as killed would credit an oracle for noticing
+            # a change that never existed.
+            return MutantOutcome(mutant=mutant, executed=False)
 
         if mutated == original:
-            # An operator that changed nothing proves nothing. Counting it as a
-            # kill would inflate the score, so it is reported as killed only
-            # because it cannot survive: it does not exist.
-            return MutantOutcome(mutant=mutant, killed=assignment.criteria)
+            # An operator that changed nothing proves nothing about any oracle.
+            # Excluded from the evidence rather than counted, because counting it
+            # as a kill manufactures a KEPT verdict out of an empty probe.
+            return MutantOutcome(mutant=mutant, executed=False)
 
         try:
             target.write_text(mutated, encoding="utf-8")
-            run = run_tests(worktree, nodeids, timeout=timeout, python=python)
+            run = run_tests(
+                worktree,
+                nodeids,
+                timeout=timeout,
+                python=python,
+                import_roots=_import_roots(worktree, mutant.path),
+            )
         finally:
             target.write_text(original, encoding="utf-8")
     finally:

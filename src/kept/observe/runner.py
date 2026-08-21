@@ -139,11 +139,18 @@ def run_tests(
     *,
     timeout: float | None = None,
     python: Path | None = None,
+    import_roots: Sequence[Path] = (),
 ) -> TestRun:
     """Run exactly the given tests, with no coverage instrumentation.
 
     A timeout is reported rather than raised: a mutant that makes the suite hang
     has changed behaviour observably, which is a kill, not a failure of kept.
+
+    Args:
+        import_roots: Directories to put ahead of everything else on the import
+            path. Load-bearing when the project under audit is installed into the
+            environment: without them a mutated copy is never imported and every
+            mutant looks harmless.
     """
     if not nodeids:
         return TestRun(report=Report())
@@ -163,6 +170,12 @@ def run_tests(
     with tempfile.TemporaryDirectory() as scratch:
         destination = Path(scratch) / "report.json"
         environment = {**os.environ, REPORT_ENV_VAR: str(destination)}
+        if import_roots:
+            existing = environment.get("PYTHONPATH")
+            entries = [str(path) for path in import_roots]
+            if existing:
+                entries.append(existing)
+            environment["PYTHONPATH"] = os.pathsep.join(entries)
 
         try:
             # Fixed argv and no shell, so the command cannot be injected into.

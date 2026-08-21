@@ -1,215 +1,138 @@
+<div align="center">
+
 # kept
 
-**Your spec is a list of promises. `kept` proves, per promise, which ones your code actually keeps — and it does not take a test suite's word for it.**
+### Promises, proven.
 
-An offline, deterministic CLI that reads your acceptance criteria, binds each one to the tests that claim to verify it, then breaks the code those tests guard to find out whether they actually notice.
+**Per-criterion verification evidence for agent-written code.**
 
+[Quickstart](docs/QUICKSTART.md) · [Verdicts](docs/VERDICTS.md) · [Commands](docs/COMMANDS.md) · [CI](docs/CI.md) · [Agents & MCP](docs/AGENTS.md) · [Threat model](docs/THREAT-MODEL.md) · [Public evidence](EVIDENCE.md)
+
+![PyPI](https://img.shields.io/pypi/v/kept-cli?style=flat-square&color=5b5bd6&label=pypi) ![Python](https://img.shields.io/pypi/pyversions/kept-cli?style=flat-square&color=5b5bd6) ![CI](https://img.shields.io/github/actions/workflow/status/hicksonhaziel/kept/ci.yml?style=flat-square&branch=main) ![kept on kept](https://img.shields.io/badge/kept_on_kept-4_kept_·_45_weak-f59e0b?style=flat-square) ![Licence](https://img.shields.io/badge/licence-MIT-3178c6?style=flat-square)
+
+</div>
+
+kept reads your acceptance criteria, binds each one to the tests that claim to verify it, breaks the code those tests guard, and records — per criterion — whether they noticed. Parsing, binding, observation, mutation, and the verdict rules are deterministic Python; no model participates in the verification path.
+
+> [!IMPORTANT]
+> **Truthful public status:** kept 0.1.0 is published on PyPI and installs cleanly from a fresh environment. It publishes its own ledger in CI, and that ledger currently reads 4 kept · 45 weak · 2 unproven of 51 promises. It has been run against three projects: this repository and its two bundled fixtures. No claim is made about large codebases, no verdict is a proof of correctness, and two defects that made kept's own output untrustworthy were found and fixed on 2026-08-21 — both are documented rather than quietly patched.
+
+## Why kept
+
+An agent writes the implementation and its tests in the same breath. The suite is green, coverage is high, and the work looks finished — but the same author produced both the code and its oracle, so a green suite may only prove the code agrees with itself.
+
+| Property | kept behaviour |
+|---|---|
+| Per-promise verdicts | One of KEPT, WEAK, UNPROVEN, BROKEN, STALE for every normative criterion |
+| Oracle-strength evidence | Mutates the lines a criterion's own tests execute, then reruns only those tests |
+| Human-owned mapping | Bindings are authored and reviewed by people, in a committed file kept never rewrites silently |
+| No model in the path | Not to classify, not to summarise, not behind a flag. A verdict backed by a model is an opinion |
+| Deterministic | Same commit, same seed, same ledger, byte for byte. Repository-relative paths, no timestamps in the payload |
+| Offline | No network, no account, no API key, at any point |
+| Self-attesting | kept publishes its own verdicts, weak spots included, regenerated in CI |
+
+## What a run looks like
+
+```console
+$ kept verify
+  REQ-1.1    KEPT          9/9
+  REQ-1.2    WEAK          6/7   1 of 7 detectable breakages went unnoticed
+      missed  refund.py:122  <= to <   (caught by REQ-1.3)
+  REQ-1.4    UNPROVEN        -   no oracle claims to verify this promise
+
+25 promises · 4 kept · 20 weak · 1 unproven
 ```
-25 promises · 4 kept · 21 weak
+
+`WEAK` is the verdict that earns the tool: those tests passed, and they would have passed anyway. `REQ-1.3`'s tests catching the same change is the proof it was detectable.
+
+## Pipeline
+
+```text
+.kiro/specs/*/requirements.md
+   │
+   ├── parse ──────── EARS grammar → typed IR, stable IDs, content hashes
+   │
+   ├── bind ───────── @pytest.mark.verifies markers → .kept/bindings.toml
+   │
+   ├── observe ────── pytest under per-test coverage → criterion ↔ line map
+   │
+   ├── attack ─────── libcst mutants on covered lines, in a temporary worktree
+   │                  rerun ONLY that criterion's own bound tests
+   │
+   └── rule ───────── pure function: evidence → verdict
+                          │
+                          ▼
+              .kept/ledger.json · EVIDENCE.md · badge
+```
+
+`parse`, `bind` and `rule` are pure. `observe` and `attack` are adapters at the edge. The rule engine is unit-tested with hand-built evidence and no I/O, because a verdict you cannot test without running a suite is a verdict you cannot trust. See [Commands](docs/COMMANDS.md) for the stage-by-stage surface.
+
+## Install
+
+```bash
+uv add --dev kept-cli     # or: pip install kept-cli
+```
+
+> [!WARNING]
+> Install it into the environment your tests run in. The `@pytest.mark.verifies` marker comes from a pytest plugin kept ships via an entry point; a global-only install leaves your project's pytest not knowing the marker exists, and `--strict-markers` will then fail on every one.
+
+Then, once:
+
+```bash
+kept parse            # which criteria kept can read
+kept bind --write     # after marking tests; writes .kept/bindings.toml to review
+kept verify --write   # writes .kept/ledger.json and EVIDENCE.md to commit
+```
+
+After that, forever: `kept verify`. In a Kiro project no flags are needed — `--root` defaults to the working directory and specs are discovered. Anything else belongs in [`.kept/config.toml`](docs/CONFIGURATION.md).
+
+## Try it without installing anything
+
+Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
+
+```bash
+git clone https://github.com/hicksonhaziel/kept.git && cd kept
+uv sync --all-extras
+
+uv run kept verify --root fixtures/refund_engine               # a Kiro project
+uv run kept verify --root fixtures/slug --spec ACCEPTANCE.md    # no .kiro at all
+uv run kept prompt REQ-1.1 --root fixtures/refund_engine        # what to do about a WEAK
 ```
 
 ## kept, on kept
-
-kept audits its own promises in CI and publishes the result, weak spots included:
 
 ```
 51 promises · 4 kept · 45 weak · 2 unproven
 ```
 
-See [EVIDENCE.md](EVIDENCE.md). Two of those promises have no test at all and say
-so; forty-five have tests that pass without noticing a change kept made to the code
-they cover. That is an uncomfortable number to publish, and it is the number.
+Two promises have no test at all and say so. Forty-five have tests that pass without noticing a change kept made to the code they cover. That is an uncomfortable number to publish and it is the number: [EVIDENCE.md](EVIDENCE.md).
 
-Pointing kept at itself for the first time also found two defects that had made the
-tool's own output untrustworthy — mutants that were never imported, and mutants that
-were counted as killed without ever running. Before the fix kept reported 26 of its
-own promises as KEPT. That figure was fiction. See
-[the journal](docs/journal/2026-08-21.md).
-
-## This is not Kiro's property-based testing
-
-The resemblance is the most obvious objection to the project, so here it is
-directly. Kiro *generates* the oracle. kept *audits and enforces* it.
-
-| | Kiro's correctness features | kept |
-|---|---|---|
-| What it produces | a property-based test for code you point it at | a verdict per acceptance criterion, and the evidence behind it |
-| Where it runs | in the IDE, while you work | in CI, on every commit, and locally |
-| Who writes the oracle | Kiro | you already did; kept never writes one |
-| What it asks | "what property should hold here?" | "would the tests bound to this promise notice if the code broke?" |
-| How it decides | a model proposes the property | mutation of the covered lines, then the criterion's own tests. No model, at any point |
-| What you keep | a test file | a committed, commit-pinned ledger and `EVIDENCE.md` |
-| Failure it catches | missing test cases | tests that pass while the implementation is broken, and criteria nothing verifies |
-
-They compose: Kiro writes the property, kept tells you whether that property
-actually constrains the implementation, and fails the build when it stops doing so.
-kept consumes Kiro's requirement-to-test links as input — the `@verifies` marker is
-how a criterion and a test are connected, whoever wrote the test.
-
-If you already have tests, kept needs no new ones to start. It will tell you which
-of your existing tests are load-bearing and which are decoration.
-
-### And compared with tools that check documentation claims
-
-There is a family of tools that read prose promises — a README, a changelog — and
-exercise the running product against them. That is a different question, and a
-useful one. It asks *does the deployed product still do what the docs say*. kept
-asks *would your test suite notice if it stopped*.
-
-The practical difference is what a reader needs to reproduce the answer: those
-tools need a live target, a browser runner, and usually credentials. kept needs the
-repository. No network, no account, no API key, and the same ledger byte-for-byte
-on any machine.
+Pointing kept at itself for the first time also found two defects in its own verification path — mutants that were never imported, and mutants counted as killed without ever running. Before the fix, kept called 26 of its own promises KEPT. That figure was fiction. The post-mortem is in [the journal](docs/journal/2026-08-21.md); [ADR-0006](docs/adr/0006-cross-scope-detectability.md) explains why most of the remaining 45 are honest.
 
 ## Documentation
 
 | | |
 |---|---|
-| [EVIDENCE.md](EVIDENCE.md) | kept's own verdicts, regenerated in CI |
-| [Threat model](docs/threat-model.md) | every way a verdict could be wrong, including two that were |
-| [ADRs](docs/adr/) | the decisions, including the ones that are uncomfortable |
-| [Journal](docs/journal/) | the build log: what went wrong, and how it was found |
-| [Releasing](docs/release.md) | how a version reaches PyPI |
-
-## Install it in your own project
-
-kept has to be installed into the environment your tests run in, because the
-`@pytest.mark.verifies` marker is registered by a pytest plugin kept ships. So it is
-a dev dependency, not a standalone tool:
-
-```bash
-uv add --dev kept-cli
-# or: pip install kept-cli
-```
-
-Then, once:
-
-```bash
-kept parse            # the criteria kept can read
-# mark the tests that verify each one: @pytest.mark.verifies("REQ-1.1")
-kept bind --write     # writes .kept/bindings.toml to review and commit
-kept verify --write   # writes .kept/ledger.json and EVIDENCE.md to commit
-```
-
-After that, forever:
-
-```bash
-kept verify
-```
-
-`--root` defaults to the current directory and specifications are discovered from
-`.kiro/specs/*/requirements.md`, so a Kiro project needs no flags at all.
-
-### Configure it once
-
-If your project does need non-default settings, state them in `.kept/config.toml`
-and stop repeating them:
-
-```toml
-version = 1
-spec = ["docs/acceptance.md"]   # projects without .kiro/specs
-source = "myapp"                # what coverage should measure
-tests = "tests/unit"
-gate = "no-regression"
-threshold = 1.0
-cap = 12
-```
-
-Precedence is explicit flag, then this file, then the built-in default. An unknown
-key or a value of the wrong type stops the run with exit 2 rather than being
-ignored: a misspelled `treshold` that quietly did nothing would be worse than a
-refusal. The settings that can change a verdict — `threshold` and `cap` — are still
-recorded in the ledger, so a published number stays reproducible without this file.
-
-## Try it on the bundled fixtures
-
-Requires [uv](https://docs.astral.sh/uv/getting-started/installation/). No API key, no account, no network.
-
-```bash
-git clone https://github.com/hicksonhaziel/kept.git
-cd kept
-uv sync --all-extras
-
-# a Kiro project, specs discovered automatically
-uv run kept verify --root fixtures/refund_engine
-
-# a plain Python project with no .kiro directory at all
-uv run kept verify --root fixtures/slug --spec ACCEPTANCE.md
-```
-
-## Commands
-
-```
-kept parse     the promises kept can read, with identifiers and content hashes
-kept bind      which test claims to verify each promise
-kept observe   which lines each promise's tests actually execute
-kept attack    which breakages those tests fail to notice
-kept verify    the verdict on every promise, plus the evidence ledger
-kept prompt    a remediation brief for one promise, rendered from the ledger
-```
-
-`kept prompt REQ-1.1` restates the recorded evidence for one promise and names the
-change that would answer it — for a human, or for an agent to act on:
-
-```bash
-uv run kept verify --root fixtures/refund_engine --write
-uv run kept prompt REQ-1.1 --root fixtures/refund_engine
-```
-
-It reads the ledger, runs no tests, reaches no verdict, and consults no model. It
-is a suggestion, and it says so in its own text. Only `kept verify` moves a
-verdict. See [ADR-0005](docs/adr/0005-the-brief-is-outside-the-verification-path.md).
-
-## Use it from an agent
-
-`kept serve` speaks [MCP](https://modelcontextprotocol.io) over stdio, so an agent
-can read the evidence and act on it:
-
-```bash
-uv sync --extra mcp
-uv run kept serve --root fixtures/refund_engine
-```
-
-| Tool | Does |
-|---|---|
-| `list_promises` | every criterion, with the verdict recorded for it |
-| `read_ledger` | the committed ledger and the evidence behind each verdict |
-| `remediation_brief` | what one promise's evidence says, and the change it asks for |
-| `verify` | run the pipeline; the only tool that can move a verdict |
-
-The root and the specification are fixed by the flags you start the server with,
-not chosen by the client, so an agent cannot point kept at a different project. The
-first three tools are read-only. No model participates in a verdict, in this path
-or any other.
-
-## Use it in CI
-
-```yaml
-- uses: hicksonhaziel/kept@v0
-  with:
-    root: .
-    gate: no-regression
-```
-
-The gate defaults to `no-regression`, which is adoptable on an existing codebase on
-day one: today's WEAK verdicts are reported, not failed, and the build breaks only
-when a promise loses ground against the committed ledger. Use `all-kept` once you
-are clean, or `no-broken` in between.
-
-Outputs: `headline`, `promises`, `kept`, `weak`, `unproven`, `broken`,
-`regressions`, `ledger`. The verdict table is appended to the job summary. The exit
-status is kept's own contract: 0 gate satisfied, 1 gate violated, 2 usage error, 3
-internal error.
-
-kept's own CI runs this action against the fixtures in this repository, so the
-action is covered by the same evidence as the tool.
+| [Quickstart](docs/QUICKSTART.md) | install, bind, verify — five minutes |
+| [Verdicts](docs/VERDICTS.md) | the five verdicts, and the asymmetry behind WEAK |
+| [Commands](docs/COMMANDS.md) | every command and flag, and the exit-code contract |
+| [Configuration](docs/CONFIGURATION.md) | `.kept/config.toml`, so `kept verify` stays the whole command |
+| [CI](docs/CI.md) | the action, the four gates, runtime |
+| [Agents & MCP](docs/AGENTS.md) | `kept serve`, the four tools, Kiro hooks |
+| [Comparison](docs/COMPARISON.md) | why this is not Kiro's property-based testing |
+| [Threat model](docs/THREAT-MODEL.md) | every way a verdict could be wrong, including two that were |
+| [ADRs](docs/adr/INDEX.md) | the decisions, including the uncomfortable ones |
+| [Journal](docs/journal/) | the build log: what broke, and how it was found |
+| [Releasing](docs/RELEASE.md) | how a version reaches PyPI |
 
 ## Scope
 
 - **Python and pytest only.** Not JavaScript, not Go.
-- Needs written acceptance criteria: Kiro's `.kiro/specs/*/requirements.md`, or any markdown file passed with `--spec`.
-- Produces **evidence, not proof.** A killed mutant is not a guarantee of correctness.
+- Needs written acceptance criteria — Kiro's `.kiro/specs/*/requirements.md`, or any markdown file passed with `--spec`.
+- Criteria must carry a normative modality (`SHALL`, `MUST`). `SHOULD` and `MAY` parse but are advisory and carry no verdict.
+- A criterion no test could reasonably automate belongs in the bindings file as an explicit exclusion with a reason, not left silently unbound.
+- Produces **evidence, not proof**.
 
 ## Licence
 
-MIT.
+[MIT](LICENSE).

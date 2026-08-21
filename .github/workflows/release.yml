@@ -3,7 +3,7 @@ name: release
 # Publishes to PyPI on a version tag, using trusted publishing: the job proves its
 # identity to PyPI with a short-lived OIDC token, so no API token is ever stored in
 # this repository. Requires a pending publisher configured on PyPI first — see the
-# release checklist in docs/release.md.
+# release checklist in docs/RELEASE.md.
 
 on:
   push:

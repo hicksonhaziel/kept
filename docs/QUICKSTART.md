@@ -71,6 +71,7 @@ kept never invents this mapping. You write it, review it, and commit it.
 ```python
 import pytest
 
+
 @pytest.mark.verifies("REQ-1.1")
 def test_a_ten_percent_discount_reduces_the_total_by_a_tenth():
     assert discounted(1000, 10) == 900

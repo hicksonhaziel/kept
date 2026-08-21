@@ -92,8 +92,12 @@ runs:
     - name: Install kept
       shell: bash
       # From the action's own checkout, so the version that runs is the version
-      # you pinned this action to. No index, no published package required.
-      run: uv tool install --force "${{ github.action_path }}"
+      # you pinned this action to. No index, no published package required. The
+      # pytest extra means kept has a usable interpreter even when the project
+      # under audit has no virtual environment of its own; a project that does
+      # have one should pass it as `python`, since its tests need its own
+      # dependencies rather than kept's.
+      run: uv tool install --force "${{ github.action_path }}[pytest]"
 
     - name: Verify promises
       id: verify

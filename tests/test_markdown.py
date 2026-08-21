@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import textwrap
 
+import pytest
+
 from kept.markdown import extract
 
 SOURCE = "spec.md"
@@ -14,6 +16,7 @@ def document(body: str) -> str:
 
 
 class TestStructure:
+    @pytest.mark.verifies("REQ-4.3")
     def test_extracts_a_numbered_requirement_with_its_criteria(self) -> None:
         result = extract(
             document(
@@ -34,6 +37,7 @@ class TestStructure:
         assert requirement.title == "Refunds"
         assert len(requirement.criteria) == 2
 
+    @pytest.mark.verifies("REQ-4.4")
     def test_criterion_positions_are_one_based_and_scoped_to_the_requirement(self) -> None:
         result = extract(
             document(
@@ -52,6 +56,7 @@ class TestStructure:
         assert [c.position for c in criteria] == [1, 2]
         assert {c.requirement_number for c in criteria} == {4}
 
+    @pytest.mark.verifies("REQ-4.3")
     def test_a_title_separated_by_a_dash_is_captured(self) -> None:
         result = extract(
             document(
@@ -67,6 +72,7 @@ class TestStructure:
         )
         assert result.requirements[0].title == "Invoicing"
 
+    @pytest.mark.verifies("REQ-4.3")
     def test_a_requirement_without_a_title_records_none(self) -> None:
         result = extract(
             document(
@@ -82,6 +88,7 @@ class TestStructure:
         )
         assert result.requirements[0].title is None
 
+    @pytest.mark.verifies("REQ-4.3")
     def test_multiple_requirements_are_kept_separate(self) -> None:
         result = extract(
             document(
@@ -106,6 +113,7 @@ class TestStructure:
 
 
 class TestUserStories:
+    @pytest.mark.verifies("REQ-4.7")
     def test_a_user_story_is_recorded_as_prose(self) -> None:
         result = extract(
             document(
@@ -125,6 +133,7 @@ class TestUserStories:
         assert story is not None
         assert story.startswith("As a developer")
 
+    @pytest.mark.verifies("REQ-4.7")
     def test_a_user_story_is_not_treated_as_a_criterion(self) -> None:
         result = extract(
             document(
@@ -144,6 +153,7 @@ class TestUserStories:
 
 
 class TestContinuations:
+    @pytest.mark.verifies("REQ-4.5")
     def test_an_indented_line_continues_the_previous_criterion(self) -> None:
         result = extract(
             document(
@@ -162,6 +172,7 @@ class TestContinuations:
         assert len(criteria) == 1
         assert "display a warning" in criteria[0].text
 
+    @pytest.mark.verifies("REQ-4.5")
     def test_a_blank_line_ends_a_criterion(self) -> None:
         result = extract(
             document(
@@ -181,6 +192,7 @@ class TestContinuations:
         assert len(criteria) == 1
         assert "indented prose" not in criteria[0].text
 
+    @pytest.mark.verifies("REQ-4.5")
     def test_an_unindented_line_ends_a_criterion(self) -> None:
         result = extract(
             document(
@@ -199,6 +211,7 @@ class TestContinuations:
 
 
 class TestWhatIsIgnored:
+    @pytest.mark.verifies("REQ-4.9")
     def test_a_numbered_list_inside_a_code_fence_is_not_a_criterion(self) -> None:
         result = extract(
             document(
@@ -220,6 +233,7 @@ class TestWhatIsIgnored:
         assert len(criteria) == 1
         assert "sample text" not in criteria[0].text
 
+    @pytest.mark.verifies("REQ-4.9")
     def test_a_tilde_fence_also_hides_its_contents(self) -> None:
         result = extract(
             document(
@@ -239,6 +253,7 @@ class TestWhatIsIgnored:
         )
         assert len(result.requirements[0].criteria) == 1
 
+    @pytest.mark.verifies("REQ-4.9")
     def test_prose_and_tables_outside_a_criteria_list_are_ignored(self) -> None:
         result = extract(
             document(
@@ -263,6 +278,7 @@ class TestWhatIsIgnored:
         assert len(result.requirements) == 1
         assert len(result.requirements[0].criteria) == 1
 
+    @pytest.mark.verifies("REQ-4.3")
     def test_a_later_heading_closes_the_criteria_list(self) -> None:
         result = extract(
             document(
@@ -284,6 +300,7 @@ class TestWhatIsIgnored:
 
 
 class TestDiagnostics:
+    @pytest.mark.verifies("REQ-4.8")
     def test_an_unnumbered_requirement_heading_gets_an_ordinal_and_w003(self) -> None:
         result = extract(
             document(
@@ -300,6 +317,8 @@ class TestDiagnostics:
         assert result.requirements[0].number == 1
         assert [d.code for d in result.diagnostics] == ["W003"]
 
+    @pytest.mark.verifies("REQ-4.8")
+    @pytest.mark.verifies("REQ-5.4")
     def test_the_w003_message_tells_the_author_to_number_the_heading(self) -> None:
         result = extract(
             document(
@@ -315,6 +334,7 @@ class TestDiagnostics:
         )
         assert "Number the heading" in result.diagnostics[0].message
 
+    @pytest.mark.verifies("REQ-4.8")
     def test_an_ordinal_does_not_collide_with_a_later_explicit_number(self) -> None:
         result = extract(
             document(
@@ -336,6 +356,7 @@ class TestDiagnostics:
         )
         assert [r.number for r in result.requirements] == [1, 2]
 
+    @pytest.mark.verifies("REQ-5.2")
     def test_a_numbered_item_with_no_requirement_yields_w002(self) -> None:
         result = extract(
             document(
@@ -354,6 +375,7 @@ class TestDiagnostics:
 
 
 class TestSpans:
+    @pytest.mark.verifies("REQ-4.6")
     def test_a_span_slices_back_to_the_criterion_text(self) -> None:
         text = document(
             """
@@ -369,6 +391,7 @@ class TestSpans:
         for criterion in result.requirements[0].criteria:
             assert criterion.span.slice_of(text) == criterion.text
 
+    @pytest.mark.verifies("REQ-4.6")
     def test_a_span_excludes_the_list_marker(self) -> None:
         text = document(
             """
@@ -384,6 +407,7 @@ class TestSpans:
         assert criterion.text == "THE system SHALL stop"
         assert not criterion.span.slice_of(text).startswith("1.")
 
+    @pytest.mark.verifies("REQ-4.6")
     def test_a_multi_line_span_covers_every_continuation_line(self) -> None:
         text = document(
             """
@@ -400,6 +424,7 @@ class TestSpans:
         assert criterion.span.slice_of(text) == criterion.text
         assert "\n" in criterion.text
 
+    @pytest.mark.verifies("REQ-4.6")
     def test_every_span_carries_the_source_path(self) -> None:
         result = extract(
             document(
@@ -417,6 +442,7 @@ class TestSpans:
 
 
 class TestParenthesisedMarkers:
+    @pytest.mark.verifies("REQ-4.4")
     def test_a_closing_parenthesis_marker_is_accepted(self) -> None:
         result = extract(
             document(

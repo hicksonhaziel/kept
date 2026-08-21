@@ -33,6 +33,7 @@ def clause(kind: ClauseKind) -> Clause:
 class TestClassification:
     """Tested as a pure function on clause kinds, with no parser involved."""
 
+    @pytest.mark.verifies("REQ-2.1")
     def test_no_clauses_is_ubiquitous(self) -> None:
         assert classify_pattern(()) is EarsPattern.UBIQUITOUS
 
@@ -42,6 +43,7 @@ class TestClassification:
         assert classify_pattern((ClauseKind.UNWANTED,)) is EarsPattern.UNWANTED_BEHAVIOUR
         assert classify_pattern((ClauseKind.FEATURE,)) is EarsPattern.OPTIONAL_FEATURE
 
+    @pytest.mark.verifies("REQ-2.6")
     def test_two_or_more_clauses_is_complex(self) -> None:
         assert classify_pattern((ClauseKind.STATE, ClauseKind.TRIGGER)) is EarsPattern.COMPLEX
 
@@ -52,17 +54,20 @@ class TestClassification:
 
 
 class TestNormativity:
+    @pytest.mark.verifies("REQ-2.9")
     def test_shall_and_must_oblige_the_implementation(self) -> None:
         assert is_normative(Modality.SHALL)
         assert is_normative(Modality.SHALL_NOT)
         assert is_normative(Modality.MUST)
         assert is_normative(Modality.MUST_NOT)
 
+    @pytest.mark.verifies("REQ-2.10")
     def test_should_and_may_do_not(self) -> None:
         assert not is_normative(Modality.SHOULD)
         assert not is_normative(Modality.SHOULD_NOT)
         assert not is_normative(Modality.MAY)
 
+    @pytest.mark.verifies("REQ-2.8")
     def test_every_modality_is_classified(self) -> None:
         for modality in Modality:
             assert isinstance(is_normative(modality), bool)
@@ -124,21 +129,25 @@ class TestSerialisation:
         )
         return SpecDocument(name="demo", path="spec.md", requirements=(requirement,))
 
+    @pytest.mark.verifies("REQ-6.5")
     def test_json_keys_are_sorted(self) -> None:
         rendered = to_json(self.build_document())
         payload = json.loads(rendered)
         assert list(payload) == sorted(payload)
 
+    @pytest.mark.verifies("REQ-3.7")
     def test_json_carries_a_schema_version(self) -> None:
         payload = json.loads(to_json(self.build_document()))
         assert payload["schema_version"] >= 1
 
+    @pytest.mark.verifies("REQ-6.6")
     def test_json_contains_no_timestamp(self) -> None:
         # A timestamp would make two identical parses appear different (REQ-6.6).
         rendered = to_json(self.build_document()).lower()
         for word in ("timestamp", "generated_at", "created_at"):
             assert word not in rendered
 
+    @pytest.mark.verifies("REQ-6.1")
     def test_serialisation_is_byte_identical_across_runs(self) -> None:
         assert to_json(self.build_document()) == to_json(self.build_document())
 
@@ -151,6 +160,7 @@ class TestSerialisation:
 
 
 class TestDocumentAccess:
+    @pytest.mark.verifies("REQ-6.2")
     def test_criteria_flattens_in_requirement_then_position_order(self) -> None:
         def make(number: int, position: int) -> object:
             return build_criterion(

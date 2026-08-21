@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from kept.ir import to_json
 from kept.loader import load_all, load_document
 
@@ -22,6 +24,7 @@ def spec_path(repo_root: Path) -> Path:
 
 
 class TestOwnSpecification:
+    @pytest.mark.verifies("REQ-5.1")
     def test_the_specification_parses_with_no_errors(self, repo_root: Path) -> None:
         result = load_document(spec_path(repo_root), root=repo_root)
         assert [d.message for d in result.errors] == []
@@ -45,6 +48,7 @@ class TestOwnSpecification:
             patterns
         )
 
+    @pytest.mark.verifies("REQ-4.6")
     def test_every_span_slices_back_to_its_criterion(self, repo_root: Path) -> None:
         path = spec_path(repo_root)
         text = path.read_text(encoding="utf-8")
@@ -52,6 +56,7 @@ class TestOwnSpecification:
         for criterion in result.criteria:
             assert criterion.span.slice_of(text) == criterion.raw_text
 
+    @pytest.mark.verifies("REQ-3.1")
     def test_identifiers_are_unique(self, repo_root: Path) -> None:
         result = load_document(spec_path(repo_root), root=repo_root)
         ids = [c.id for c in result.criteria]
@@ -59,11 +64,13 @@ class TestOwnSpecification:
 
 
 class TestDeterminism:
+    @pytest.mark.verifies("REQ-6.1")
     def test_parsing_the_repository_twice_is_byte_identical(self, repo_root: Path) -> None:
         first = [to_json(d) for d in load_all(repo_root).documents]
         second = [to_json(d) for d in load_all(repo_root).documents]
         assert first == second
 
+    @pytest.mark.verifies("REQ-4.1")
     def test_load_all_finds_the_specification(self, repo_root: Path) -> None:
         result = load_all(repo_root)
         assert "ears-parser" in {document.name for document in result.documents}

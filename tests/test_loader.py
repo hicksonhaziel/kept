@@ -44,12 +44,14 @@ def write_spec(root: Path, name: str, body: str = SPEC_BODY) -> Path:
 
 
 class TestDiscovery:
+    @pytest.mark.verifies("REQ-4.1")
     def test_finds_requirements_files_beneath_spec_directories(self, tmp_path: Path) -> None:
         write_spec(tmp_path, "refunds")
         write_spec(tmp_path, "invoicing")
         found = discover_spec_files(tmp_path)
         assert [path.parent.name for path in found] == ["invoicing", "refunds"]
 
+    @pytest.mark.verifies("REQ-6.2")
     def test_discovery_order_is_deterministic(self, tmp_path: Path) -> None:
         for name in ("zeta", "alpha", "mu"):
             write_spec(tmp_path, name)
@@ -60,13 +62,16 @@ class TestDiscovery:
             "zeta",
         ]
 
+    @pytest.mark.verifies("REQ-4.1")
     def test_returns_nothing_when_there_is_no_specs_directory(self, tmp_path: Path) -> None:
         assert discover_spec_files(tmp_path) == ()
 
+    @pytest.mark.verifies("REQ-4.1")
     def test_ignores_a_spec_directory_with_no_requirements_file(self, tmp_path: Path) -> None:
         (tmp_path / ".kiro" / "specs" / "empty").mkdir(parents=True)
         assert discover_spec_files(tmp_path) == ()
 
+    @pytest.mark.verifies("REQ-4.1")
     def test_does_not_recurse_below_a_spec_directory(self, tmp_path: Path) -> None:
         nested = tmp_path / ".kiro" / "specs" / "outer" / "inner"
         nested.mkdir(parents=True)
@@ -75,14 +80,18 @@ class TestDiscovery:
 
 
 class TestPathBoundary:
+    @pytest.mark.verifies("REQ-6.3")
     def test_paths_are_repository_relative_with_forward_slashes(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         assert relative_posix(path, tmp_path) == ".kiro/specs/refunds/requirements.md"
 
+    @pytest.mark.verifies("REQ-6.3")
     def test_a_path_outside_the_root_degrades_to_its_name(self, tmp_path: Path) -> None:
         outside = tmp_path.parent / "elsewhere.md"
         assert relative_posix(outside, tmp_path) == "elsewhere.md"
 
+    @pytest.mark.verifies("REQ-4.6")
+    @pytest.mark.verifies("REQ-6.3")
     def test_no_absolute_path_reaches_the_document(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         result = load_document(path, root=tmp_path)
@@ -101,11 +110,13 @@ class TestLoading:
             "REQ-1.3",
         ]
 
+    @pytest.mark.verifies("REQ-4.2")
     def test_specification_name_comes_from_the_containing_directory(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         result = load_document(path, root=tmp_path)
         assert result.documents[0].name == "refunds"
 
+    @pytest.mark.verifies("REQ-4.7")
     def test_the_user_story_is_carried_through(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         result = load_document(path, root=tmp_path)
@@ -123,6 +134,7 @@ class TestLoading:
         with pytest.raises(SpecNotFoundError):
             load_document(tmp_path / "nope.md", root=tmp_path)
 
+    @pytest.mark.verifies("REQ-6.2")
     def test_load_all_orders_documents_by_path(self, tmp_path: Path) -> None:
         write_spec(tmp_path, "zeta")
         write_spec(tmp_path, "alpha")
@@ -136,6 +148,7 @@ class TestLoading:
 
 
 class TestRequirementOrdering:
+    @pytest.mark.verifies("REQ-6.2")
     def test_requirements_are_ordered_by_number_not_by_appearance(self, tmp_path: Path) -> None:
         body = textwrap.dedent(
             """
@@ -159,6 +172,7 @@ class TestRequirementOrdering:
 
 
 class TestDiagnosticsPropagation:
+    @pytest.mark.verifies("REQ-5.1")
     def test_an_unparseable_criterion_does_not_stop_the_others(self, tmp_path: Path) -> None:
         body = textwrap.dedent(
             """
@@ -194,12 +208,14 @@ class TestDiagnosticsPropagation:
 
 
 class TestDeterminism:
+    @pytest.mark.verifies("REQ-6.1")
     def test_loading_twice_yields_equal_documents(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         first = load_document(path, root=tmp_path)
         second = load_document(path, root=tmp_path)
         assert first == second
 
+    @pytest.mark.verifies("REQ-6.1")
     def test_loading_twice_yields_byte_identical_json(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         first = to_json(load_document(path, root=tmp_path).documents[0])
@@ -208,6 +224,7 @@ class TestDeterminism:
 
 
 class TestSpanRoundTrip:
+    @pytest.mark.verifies("REQ-4.6")
     def test_every_span_slices_back_to_its_criterion(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         text = path.read_text(encoding="utf-8")
@@ -215,6 +232,7 @@ class TestSpanRoundTrip:
         for criterion in result.criteria:
             assert criterion.span.slice_of(text) == criterion.raw_text
 
+    @pytest.mark.verifies("REQ-2.15")
     def test_every_clause_span_slices_back_to_its_clause(self, tmp_path: Path) -> None:
         path = write_spec(tmp_path, "refunds")
         text = path.read_text(encoding="utf-8")

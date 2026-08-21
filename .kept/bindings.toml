@@ -1,0 +1,437 @@
+# Criterion to oracle map. kept verifies; it does not decide what a test
+# is supposed to prove.
+#
+# origin = "annotation"  harvested from a @pytest.mark.verifies marker.
+#                        Regenerated on every run and ignored as input, so
+#                        deleting a marker is never masked by this file.
+# origin = "manual"      written by hand. Authoritative, and overrides an
+#                        annotation for the same criterion.
+#
+# An [[unverifiable]] entry excludes a criterion from verdicts and must
+# state why, so the exclusion is a choice a reviewer can challenge.
+
+schema_version = 1
+
+[[binding]]
+criterion = "REQ-1.1"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestKeywordRecognition::test_upper_case_keywords_become_structural_tokens",
+  "tests/ears/test_lexer.py::TestKeywordRecognition::test_uppercase_and_is_an_operator_but_lowercase_and_is_prose",
+]
+
+[[binding]]
+criterion = "REQ-1.2"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestKeywordRecognition::test_lower_case_keywords_are_ordinary_words",
+  "tests/ears/test_lexer.py::TestKeywordRecognition::test_mixed_case_keywords_are_ordinary_words",
+  "tests/ears/test_lexer.py::TestKeywordRecognition::test_uppercase_and_is_an_operator_but_lowercase_and_is_prose",
+]
+
+[[binding]]
+criterion = "REQ-1.3"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestOffsetsAndSpelling::test_eof_offsets_sit_at_the_end_of_the_input",
+  "tests/ears/test_lexer.py::TestOffsetsAndSpelling::test_every_token_records_its_character_offsets",
+]
+
+[[binding]]
+criterion = "REQ-1.4"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestSeparators::test_a_comma_is_its_own_token_not_luggage_on_a_word",
+  "tests/ears/test_parser.py::TestPatternClassification::test_a_comma_inside_a_clause_body_is_retained",
+  "tests/ears/test_parser.py::TestPatternClassification::test_clause_bodies_do_not_keep_the_separating_comma",
+]
+
+[[binding]]
+criterion = "REQ-1.5"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestOffsetsAndSpelling::test_original_spelling_is_preserved_without_case_normalisation",
+]
+
+[[binding]]
+criterion = "REQ-1.6"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestSeparators::test_empty_input_yields_only_end_of_input",
+  "tests/ears/test_lexer.py::TestSeparators::test_exactly_one_end_of_input_token_is_emitted",
+  "tests/ears/test_lexer.py::TestSeparators::test_whitespace_only_input_yields_only_end_of_input",
+]
+
+[[binding]]
+criterion = "REQ-1.7"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestModalityHelpers::test_detects_an_upper_case_modality",
+  "tests/ears/test_lexer.py::TestModalityHelpers::test_finds_an_uncapitalised_modality_despite_trailing_punctuation",
+  "tests/ears/test_lexer.py::TestModalityHelpers::test_finds_an_uncapitalised_modality_for_the_warning",
+  "tests/ears/test_lexer.py::TestModalityHelpers::test_returns_none_when_no_modality_is_suggested",
+  "tests/ears/test_parser.py::TestDiagnostics::test_a_lower_case_modality_also_yields_w001",
+]
+
+[[binding]]
+criterion = "REQ-1.8"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_lexer.py::TestBacktickSpans::test_a_backtick_span_is_not_swallowed_by_a_preceding_word",
+  "tests/ears/test_lexer.py::TestBacktickSpans::test_a_backticked_keyword_is_an_ordinary_word",
+  "tests/ears/test_lexer.py::TestBacktickSpans::test_a_backticked_span_may_contain_spaces",
+  "tests/ears/test_lexer.py::TestBacktickSpans::test_an_unterminated_backtick_degrades_to_an_ordinary_word",
+  "tests/ears/test_lexer.py::TestBacktickSpans::test_backtick_span_offsets_cover_the_delimiters",
+]
+
+[[binding]]
+criterion = "REQ-2.1"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestPatternClassification::test_no_leading_clause_is_ubiquitous",
+  "tests/test_ir.py::TestClassification::test_no_clauses_is_ubiquitous",
+]
+
+[[binding]]
+criterion = "REQ-2.2"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestPatternClassification::test_a_when_clause_is_event_driven_and_records_a_trigger",
+]
+
+[[binding]]
+criterion = "REQ-2.3"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestPatternClassification::test_a_while_clause_is_state_driven_and_records_a_state",
+]
+
+[[binding]]
+criterion = "REQ-2.4"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestPatternClassification::test_an_if_clause_is_unwanted_behaviour",
+]
+
+[[binding]]
+criterion = "REQ-2.5"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestPatternClassification::test_a_where_clause_is_an_optional_feature",
+]
+
+[[binding]]
+criterion = "REQ-2.6"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestPatternClassification::test_two_or_more_clauses_are_complex_and_keep_source_order",
+  "tests/test_ir.py::TestClassification::test_two_or_more_clauses_is_complex",
+]
+
+[[binding]]
+criterion = "REQ-2.7"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestResponse::test_then_is_a_separator_and_is_excluded_from_the_response",
+  "tests/ears/test_parser.py::TestResponse::test_then_is_not_required_when_no_clause_precedes_the_subject",
+  "tests/ears/test_parser.py::TestResponse::test_without_then_the_clause_absorbs_the_subject",
+]
+
+[[binding]]
+criterion = "REQ-2.8"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestModality::test_all_modalities_are_recognised",
+  "tests/ears/test_parser.py::TestModality::test_negation_is_not_left_in_the_predicate",
+  "tests/ears/test_parser.py::TestModality::test_the_first_modality_wins_when_the_predicate_contains_another",
+  "tests/test_ir.py::TestNormativity::test_every_modality_is_classified",
+]
+
+[[binding]]
+criterion = "REQ-2.9"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestModality::test_shall_and_must_are_normative",
+  "tests/test_ir.py::TestNormativity::test_shall_and_must_oblige_the_implementation",
+]
+
+[[binding]]
+criterion = "REQ-2.10"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestModality::test_should_and_may_are_advisory",
+  "tests/test_ir.py::TestNormativity::test_should_and_may_do_not",
+]
+
+[[binding]]
+criterion = "REQ-2.11"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestConditions::test_a_backticked_operator_does_not_split_the_body",
+  "tests/ears/test_parser.py::TestConditions::test_mixed_operators_are_left_unsplit_rather_than_guessed",
+  "tests/ears/test_parser.py::TestConditions::test_upper_case_and_splits_the_body_into_conjuncts",
+  "tests/ears/test_parser.py::TestConditions::test_upper_case_or_splits_the_body_into_conjuncts",
+]
+
+[[binding]]
+criterion = "REQ-2.12"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestConditions::test_lower_case_and_is_prose_and_yields_one_conjunct",
+]
+
+[[binding]]
+criterion = "REQ-2.13"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestDiagnostics::test_no_modality_yields_e001_and_no_criterion",
+]
+
+[[binding]]
+criterion = "REQ-2.14"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestDiagnostics::test_an_empty_clause_body_yields_e002",
+  "tests/ears/test_parser.py::TestDiagnostics::test_the_e002_message_mentions_the_backtick_escape_hatch",
+]
+
+[[binding]]
+criterion = "REQ-2.15"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestSpans::test_clause_spans_are_rebased_into_file_coordinates",
+  "tests/ears/test_parser.py::TestSpans::test_clause_spans_carry_the_source_path",
+  "tests/ears/test_parser.py::TestSpans::test_clause_spans_slice_back_to_the_clause_text",
+  "tests/test_loader.py::TestSpanRoundTrip::test_every_clause_span_slices_back_to_its_clause",
+]
+
+[[binding]]
+criterion = "REQ-3.1"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestIdentity::test_the_criterion_carries_its_structural_identifier",
+  "tests/test_ids.py::TestIdentifiers::test_criterion_identifier_format",
+  "tests/test_ids.py::TestIdentifiers::test_identifiers_are_one_based",
+  "tests/test_ids.py::TestIdentifiers::test_requirement_identifier_format",
+  "tests/test_self_hosting.py::TestOwnSpecification::test_identifiers_are_unique",
+]
+
+[[binding]]
+criterion = "REQ-3.2"
+origin = "annotation"
+oracles = [
+  "tests/test_ids.py::TestIdentifiers::test_position_is_scoped_to_its_requirement",
+]
+
+[[binding]]
+criterion = "REQ-3.3"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestIdentity::test_the_content_hash_covers_the_whole_criterion",
+  "tests/test_ids.py::TestContentHash::test_hash_is_a_full_sha256_hex_digest",
+  "tests/test_ids.py::TestNormalisation::test_collapses_whitespace_runs_to_single_spaces",
+  "tests/test_ids.py::TestNormalisation::test_strips_leading_and_trailing_whitespace",
+]
+
+[[binding]]
+criterion = "REQ-3.4"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestMultiLineCriteria::test_a_wrapped_criterion_parses_identically_to_a_single_line_one",
+  "tests/test_ids.py::TestContentHash::test_criteria_differing_only_in_line_wrapping_hash_identically",
+]
+
+[[binding]]
+criterion = "REQ-3.5"
+origin = "annotation"
+oracles = [
+  "tests/test_ids.py::TestContentHash::test_a_single_character_edit_changes_the_hash",
+  "tests/test_ids.py::TestContentHash::test_case_change_changes_the_hash",
+  "tests/test_ids.py::TestNormalisation::test_preserves_case_because_case_is_semantically_significant",
+]
+
+[[binding]]
+criterion = "REQ-3.6"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestIdentity::test_the_hash_algorithm_is_recorded",
+  "tests/test_ids.py::TestContentHash::test_algorithm_name_is_recorded_so_a_change_is_not_mistaken_for_meaning",
+  "tests/test_ids.py::TestContentHash::test_display_hash_truncates_without_altering_the_stored_digest",
+]
+
+[[binding]]
+criterion = "REQ-3.7"
+origin = "annotation"
+oracles = [
+  "tests/test_ir.py::TestSerialisation::test_json_carries_a_schema_version",
+]
+
+[[binding]]
+criterion = "REQ-4.1"
+origin = "annotation"
+oracles = [
+  "tests/test_loader.py::TestDiscovery::test_does_not_recurse_below_a_spec_directory",
+  "tests/test_loader.py::TestDiscovery::test_finds_requirements_files_beneath_spec_directories",
+  "tests/test_loader.py::TestDiscovery::test_ignores_a_spec_directory_with_no_requirements_file",
+  "tests/test_loader.py::TestDiscovery::test_returns_nothing_when_there_is_no_specs_directory",
+  "tests/test_self_hosting.py::TestDeterminism::test_load_all_finds_the_specification",
+]
+
+[[binding]]
+criterion = "REQ-4.2"
+origin = "annotation"
+oracles = [
+  "tests/test_loader.py::TestLoading::test_specification_name_comes_from_the_containing_directory",
+]
+
+[[binding]]
+criterion = "REQ-4.3"
+origin = "annotation"
+oracles = [
+  "tests/test_markdown.py::TestStructure::test_a_requirement_without_a_title_records_none",
+  "tests/test_markdown.py::TestStructure::test_a_title_separated_by_a_dash_is_captured",
+  "tests/test_markdown.py::TestStructure::test_extracts_a_numbered_requirement_with_its_criteria",
+  "tests/test_markdown.py::TestStructure::test_multiple_requirements_are_kept_separate",
+  "tests/test_markdown.py::TestWhatIsIgnored::test_a_later_heading_closes_the_criteria_list",
+]
+
+[[binding]]
+criterion = "REQ-4.4"
+origin = "annotation"
+oracles = [
+  "tests/test_markdown.py::TestParenthesisedMarkers::test_a_closing_parenthesis_marker_is_accepted",
+  "tests/test_markdown.py::TestStructure::test_criterion_positions_are_one_based_and_scoped_to_the_requirement",
+]
+
+[[binding]]
+criterion = "REQ-4.5"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestMultiLineCriteria::test_raw_text_is_kept_verbatim_so_offsets_stay_exact",
+  "tests/ears/test_parser.py::TestMultiLineCriteria::test_text_property_joins_continuation_lines",
+  "tests/test_markdown.py::TestContinuations::test_a_blank_line_ends_a_criterion",
+  "tests/test_markdown.py::TestContinuations::test_an_indented_line_continues_the_previous_criterion",
+  "tests/test_markdown.py::TestContinuations::test_an_unindented_line_ends_a_criterion",
+]
+
+[[binding]]
+criterion = "REQ-4.6"
+origin = "annotation"
+oracles = [
+  "tests/test_loader.py::TestPathBoundary::test_no_absolute_path_reaches_the_document",
+  "tests/test_loader.py::TestSpanRoundTrip::test_every_span_slices_back_to_its_criterion",
+  "tests/test_markdown.py::TestSpans::test_a_multi_line_span_covers_every_continuation_line",
+  "tests/test_markdown.py::TestSpans::test_a_span_excludes_the_list_marker",
+  "tests/test_markdown.py::TestSpans::test_a_span_slices_back_to_the_criterion_text",
+  "tests/test_markdown.py::TestSpans::test_every_span_carries_the_source_path",
+  "tests/test_self_hosting.py::TestOwnSpecification::test_every_span_slices_back_to_its_criterion",
+]
+
+[[binding]]
+criterion = "REQ-4.7"
+origin = "annotation"
+oracles = [
+  "tests/test_loader.py::TestLoading::test_the_user_story_is_carried_through",
+  "tests/test_markdown.py::TestUserStories::test_a_user_story_is_not_treated_as_a_criterion",
+  "tests/test_markdown.py::TestUserStories::test_a_user_story_is_recorded_as_prose",
+]
+
+[[binding]]
+criterion = "REQ-4.8"
+origin = "annotation"
+oracles = [
+  "tests/test_markdown.py::TestDiagnostics::test_an_ordinal_does_not_collide_with_a_later_explicit_number",
+  "tests/test_markdown.py::TestDiagnostics::test_an_unnumbered_requirement_heading_gets_an_ordinal_and_w003",
+  "tests/test_markdown.py::TestDiagnostics::test_the_w003_message_tells_the_author_to_number_the_heading",
+]
+
+[[binding]]
+criterion = "REQ-4.9"
+origin = "annotation"
+oracles = [
+  "tests/test_markdown.py::TestWhatIsIgnored::test_a_numbered_list_inside_a_code_fence_is_not_a_criterion",
+  "tests/test_markdown.py::TestWhatIsIgnored::test_a_tilde_fence_also_hides_its_contents",
+  "tests/test_markdown.py::TestWhatIsIgnored::test_prose_and_tables_outside_a_criteria_list_are_ignored",
+]
+
+[[binding]]
+criterion = "REQ-5.1"
+origin = "annotation"
+oracles = [
+  "tests/test_loader.py::TestDiagnosticsPropagation::test_an_unparseable_criterion_does_not_stop_the_others",
+  "tests/test_self_hosting.py::TestOwnSpecification::test_the_specification_parses_with_no_errors",
+]
+
+[[binding]]
+criterion = "REQ-5.2"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestDiagnostics::test_no_modality_yields_e001_and_no_criterion",
+  "tests/test_markdown.py::TestDiagnostics::test_a_numbered_item_with_no_requirement_yields_w002",
+]
+
+[[binding]]
+criterion = "REQ-5.3"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestDiagnostics::test_diagnostic_spans_point_into_file_coordinates",
+]
+
+[[binding]]
+criterion = "REQ-5.4"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestDiagnostics::test_the_e002_message_mentions_the_backtick_escape_hatch",
+  "tests/ears/test_parser.py::TestDiagnostics::test_the_w001_message_tells_the_author_what_to_change",
+  "tests/test_markdown.py::TestDiagnostics::test_the_w003_message_tells_the_author_to_number_the_heading",
+]
+
+[[binding]]
+criterion = "REQ-5.5"
+origin = "annotation"
+oracles = [
+  "tests/ears/test_parser.py::TestDiagnostics::test_a_partially_understood_criterion_is_still_emitted",
+]
+
+[[binding]]
+criterion = "REQ-6.1"
+origin = "annotation"
+oracles = [
+  "tests/test_ir.py::TestSerialisation::test_serialisation_is_byte_identical_across_runs",
+  "tests/test_loader.py::TestDeterminism::test_loading_twice_yields_byte_identical_json",
+  "tests/test_loader.py::TestDeterminism::test_loading_twice_yields_equal_documents",
+  "tests/test_self_hosting.py::TestDeterminism::test_parsing_the_repository_twice_is_byte_identical",
+]
+
+[[binding]]
+criterion = "REQ-6.2"
+origin = "annotation"
+oracles = [
+  "tests/test_ir.py::TestDocumentAccess::test_criteria_flattens_in_requirement_then_position_order",
+  "tests/test_loader.py::TestDiscovery::test_discovery_order_is_deterministic",
+  "tests/test_loader.py::TestLoading::test_load_all_orders_documents_by_path",
+  "tests/test_loader.py::TestRequirementOrdering::test_requirements_are_ordered_by_number_not_by_appearance",
+]
+
+[[binding]]
+criterion = "REQ-6.3"
+origin = "annotation"
+oracles = [
+  "tests/test_loader.py::TestPathBoundary::test_a_path_outside_the_root_degrades_to_its_name",
+  "tests/test_loader.py::TestPathBoundary::test_no_absolute_path_reaches_the_document",
+  "tests/test_loader.py::TestPathBoundary::test_paths_are_repository_relative_with_forward_slashes",
+]
+
+[[binding]]
+criterion = "REQ-6.5"
+origin = "annotation"
+oracles = [
+  "tests/test_ir.py::TestSerialisation::test_json_keys_are_sorted",
+]
+
+[[binding]]
+criterion = "REQ-6.6"
+origin = "annotation"
+oracles = [
+  "tests/test_ir.py::TestSerialisation::test_json_contains_no_timestamp",
+]

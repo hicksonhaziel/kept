@@ -226,9 +226,7 @@ def _rule(
         )
 
     if not observation.usable:
-        return Ruling(
-            criterion, content_hash, Verdict.UNPROVEN, reason=Unproven.NO_USABLE_ORACLE
-        )
+        return Ruling(criterion, content_hash, Verdict.UNPROVEN, reason=Unproven.NO_USABLE_ORACLE)
 
     if not observation.covered:
         return Ruling(criterion, content_hash, Verdict.UNPROVEN, reason=Unproven.NO_COVERAGE)
@@ -287,9 +285,7 @@ def _evidence(observation: CriterionObservation, attack: AttackResult) -> Eviden
             unpinned += 1
 
     return Evidence(
-        oracles=tuple(
-            (oracle.nodeid, str(oracle.status)) for oracle in observation.oracles
-        ),
+        oracles=tuple((oracle.nodeid, str(oracle.status)) for oracle in observation.oracles),
         covered=observation.covered,
         probed=len(killed) + len(survived),
         killed=len(killed),

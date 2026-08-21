@@ -241,9 +241,7 @@ def _partition(
         unknown: list[str] = []
 
         for criterion in assignment.criteria:
-            hit = cache.get(
-                _key(source_hash, suite_hash, assignment.mutant, oracles, criterion)
-            )
+            hit = cache.get(_key(source_hash, suite_hash, assignment.mutant, oracles, criterion))
             if hit is None:
                 unknown.append(criterion)
             elif hit:

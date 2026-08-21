@@ -87,9 +87,7 @@ def select(
         for path, lines in sorted(per_path.items()):
             line_set = set(lines)
             candidates.extend(
-                mutant
-                for mutant in mutants_by_path.get(path, ())
-                if mutant.line in line_set
+                mutant for mutant in mutants_by_path.get(path, ()) if mutant.line in line_set
             )
 
         candidates.sort(key=_ordering)

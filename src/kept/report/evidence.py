@@ -75,8 +75,7 @@ def render(ledger: Ledger) -> str:
             for missed in ruling.evidence.missed:
                 caught = ", ".join(missed.caught_by)
                 lines.append(
-                    f"- `{missed.path}:{missed.line}` {missed.description} "
-                    f"— caught by {caught}"
+                    f"- `{missed.path}:{missed.line}` {missed.description} — caught by {caught}"
                 )
             lines.append("")
 
@@ -93,9 +92,7 @@ def render(ledger: Ledger) -> str:
         ]
         for entry in ledger.unpinned:
             covered = f"{len(entry.covered_by)} promises" if entry.covered_by else "none"
-            lines.append(
-                f"| `{entry.path}:{entry.line}` | {entry.description} | {covered} |"
-            )
+            lines.append(f"| `{entry.path}:{entry.line}` | {entry.description} | {covered} |")
         lines.append("")
 
     if ledger.excluded:

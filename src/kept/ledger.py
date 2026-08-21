@@ -291,9 +291,7 @@ def _read_ruling(entry: Mapping[str, Any]) -> Ruling:
     raw = entry.get("evidence") or {}
     mutants = raw.get("mutants") or {}
     evidence = Evidence(
-        oracles=tuple(
-            (item["nodeid"], item["status"]) for item in raw.get("oracles", [])
-        ),
+        oracles=tuple((item["nodeid"], item["status"]) for item in raw.get("oracles", [])),
         covered=tuple(
             (path, tuple(lines)) for path, lines in sorted((raw.get("covered") or {}).items())
         ),

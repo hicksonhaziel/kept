@@ -93,9 +93,7 @@ def _shape_of(
         if isinstance(child, ast.Assert):
             asserts += 1
         elif isinstance(child, ast.With | ast.AsyncWith):
-            raises += sum(
-                1 for item in child.items if _is_asserting_context(item.context_expr)
-            )
+            raises += sum(1 for item in child.items if _is_asserting_context(item.context_expr))
         elif isinstance(child, ast.Call) and _is_assertion_call(child.func):
             assert_calls += 1
 

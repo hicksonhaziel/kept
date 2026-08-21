@@ -137,9 +137,7 @@ def build(
             reason = next(
                 entry.reason for entry in bindings.unverifiable if entry.criterion == criterion
             )
-            observations.append(
-                CriterionObservation(criterion=criterion, excluded_reason=reason)
-            )
+            observations.append(CriterionObservation(criterion=criterion, excluded_reason=reason))
             continue
 
         oracles = tuple(

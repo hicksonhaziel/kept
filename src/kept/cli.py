@@ -396,9 +396,7 @@ def _handle_parse(args: argparse.Namespace) -> int:
 
 def _handle_bind(args: argparse.Namespace) -> int:
     try:
-        stage = pipeline.bind(
-            args.root, tests=args.tests, python=args.python, specs=args.specs
-        )
+        stage = pipeline.bind(args.root, tests=args.tests, python=args.python, specs=args.specs)
     except _INPUT_ERRORS as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE

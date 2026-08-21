@@ -105,9 +105,7 @@ def bind(
     manual = _load_bindings(_bindings_path(root))
 
     discovered = BindingSet(
-        bindings=tuple(
-            _binding(criterion, oracles) for criterion, oracles in report.bindings
-        )
+        bindings=tuple(_binding(criterion, oracles) for criterion, oracles in report.bindings)
     )
     merged = _merge_bindings(discovered, manual.human_authored())
     return BindStage(
@@ -144,9 +142,7 @@ def observe(
         diagnostics=spec.diagnostics,
     )
 
-    test_files = frozenset(
-        record.nodeid.partition("::")[0] for record in result.report.tests
-    )
+    test_files = frozenset(record.nodeid.partition("::")[0] for record in result.report.tests)
     shapes = scan_files(root, set(test_files))
 
     observations = observation.build(
@@ -273,9 +269,7 @@ def verify(
             if stored is not None
             else ledger_module.Drift()
         ),
-        regressions=(
-            ledger_module.regressions(stored, fresh) if stored is not None else ()
-        ),
+        regressions=(ledger_module.regressions(stored, fresh) if stored is not None else ()),
     )
 
 

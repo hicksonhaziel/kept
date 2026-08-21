@@ -359,9 +359,7 @@ def _read_coverage(datafile: Path) -> CoverageResult:
             continue
         data.set_query_contexts([context])
         per_file = {
-            path: tuple(sorted(measured))
-            for path in files
-            if (measured := data.lines(path))
+            path: tuple(sorted(measured)) for path in files if (measured := data.lines(path))
         }
         if per_file:
             lines[context] = per_file

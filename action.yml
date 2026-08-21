@@ -1,0 +1,112 @@
+name: kept
+description: >-
+  Prove, per acceptance criterion, which promises your code keeps. Binds each
+  criterion to the tests that claim to verify it, breaks the code those tests
+  guard, and fails the build when a promise regresses.
+branding:
+  icon: check-circle
+  color: purple
+
+inputs:
+  root:
+    description: Project root holding the specification and the tests.
+    required: false
+    default: "."
+  spec:
+    description: >-
+      Requirements document to read, relative to root. Repeatable, one per line.
+      Omit to discover every .kiro/specs/*/requirements.md.
+    required: false
+    default: ""
+  tests:
+    description: Restrict test collection to this path.
+    required: false
+    default: ""
+  source:
+    description: Path coverage should measure, relative to root.
+    required: false
+    default: "."
+  gate:
+    description: >-
+      What fails the build: none, no-regression, no-broken, or all-kept.
+      no-regression is adoptable on an existing codebase from day one.
+    required: false
+    default: "no-regression"
+  cap:
+    description: Mutants generated per promise.
+    required: false
+    default: "12"
+  threshold:
+    description: Share of detectable breakages a promise's own tests must catch to be KEPT.
+    required: false
+    default: "1.0"
+  python:
+    description: >-
+      Interpreter that owns the project's test dependencies. Defaults to the
+      nearest virtual environment in the project.
+    required: false
+    default: ""
+  write:
+    description: Write .kept/ledger.json, EVIDENCE.md and the badge into the workspace.
+    required: false
+    default: "false"
+  summary:
+    description: Append the verdict table to the GitHub step summary.
+    required: false
+    default: "true"
+
+outputs:
+  headline:
+    description: 'Example: "25 promises · 4 kept · 21 weak".'
+    value: ${{ steps.verify.outputs.headline }}
+  promises:
+    description: Number of promises judged.
+    value: ${{ steps.verify.outputs.promises }}
+  kept:
+    description: Promises whose own tests caught every detectable breakage.
+    value: ${{ steps.verify.outputs.kept }}
+  weak:
+    description: Promises that missed a breakage another bound test caught.
+    value: ${{ steps.verify.outputs.weak }}
+  unproven:
+    description: Promises where nothing was actually checked.
+    value: ${{ steps.verify.outputs.unproven }}
+  broken:
+    description: Promises with a failing bound test.
+    value: ${{ steps.verify.outputs.broken }}
+  regressions:
+    description: Promises that lost ground against the committed ledger.
+    value: ${{ steps.verify.outputs.regressions }}
+  ledger:
+    description: Path to the ledger JSON this run produced.
+    value: ${{ steps.verify.outputs.ledger }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+
+    - name: Install kept
+      shell: bash
+      # From the action's own checkout, so the version that runs is the version
+      # you pinned this action to. No index, no published package required.
+      run: uv tool install --force "${{ github.action_path }}"
+
+    - name: Verify promises
+      id: verify
+      shell: bash
+      env:
+        KEPT_ROOT: ${{ inputs.root }}
+        KEPT_SPEC: ${{ inputs.spec }}
+        KEPT_TESTS: ${{ inputs.tests }}
+        KEPT_SOURCE: ${{ inputs.source }}
+        KEPT_GATE: ${{ inputs.gate }}
+        KEPT_CAP: ${{ inputs.cap }}
+        KEPT_THRESHOLD: ${{ inputs.threshold }}
+        KEPT_PYTHON: ${{ inputs.python }}
+        KEPT_WRITE: ${{ inputs.write }}
+        KEPT_SUMMARY: ${{ inputs.summary }}
+      run: bash "${{ github.action_path }}/.github/action/verify.sh"

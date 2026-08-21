@@ -35,3 +35,40 @@ jobs:
       # trustworthy, so this runs as a gate rather than as a demo.
       - name: Self-parse
         run: uv run kept parse
+
+      # The control fixture is an honest implementation: every promise must reach
+      # KEPT. This is what shows kept does not simply cry wolf.
+      - name: Verify the control fixture
+        run: uv run kept verify --root fixtures/slug --spec ACCEPTANCE.md --gate all-kept
+
+      # The demo fixture publishes real WEAK verdicts. The gate is no-regression,
+      # so those are reported rather than suppressed, and a promise that loses
+      # ground fails the build.
+      - name: Verify the demo fixture
+        run: uv run kept verify --root fixtures/refund_engine --gate no-regression
+
+      - name: Brief a weak promise
+        run: uv run kept prompt REQ-1.1 --root fixtures/refund_engine
+
+  action:
+    name: reusable action
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # kept's own action, run on kept's own fixture. If the action cannot verify a
+      # project in this repository, it cannot verify anyone else's.
+      - name: Run the action against the control fixture
+        id: kept
+        uses: ./
+        with:
+          root: fixtures/slug
+          spec: ACCEPTANCE.md
+          gate: all-kept
+
+      - name: Check the action's outputs
+        run: |
+          test "${{ steps.kept.outputs.promises }}" = "5"
+          test "${{ steps.kept.outputs.kept }}" = "5"
+          test "${{ steps.kept.outputs.weak }}" = "0"
+          echo "${{ steps.kept.outputs.headline }}"

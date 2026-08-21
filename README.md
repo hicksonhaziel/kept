@@ -71,6 +71,28 @@ not chosen by the client, so an agent cannot point kept at a different project. 
 first three tools are read-only. No model participates in a verdict, in this path
 or any other.
 
+## Use it in CI
+
+```yaml
+- uses: hicksonhaziel/kept@v0
+  with:
+    root: .
+    gate: no-regression
+```
+
+The gate defaults to `no-regression`, which is adoptable on an existing codebase on
+day one: today's WEAK verdicts are reported, not failed, and the build breaks only
+when a promise loses ground against the committed ledger. Use `all-kept` once you
+are clean, or `no-broken` in between.
+
+Outputs: `headline`, `promises`, `kept`, `weak`, `unproven`, `broken`,
+`regressions`, `ledger`. The verdict table is appended to the job summary. The exit
+status is kept's own contract: 0 gate satisfied, 1 gate violated, 2 usage error, 3
+internal error.
+
+kept's own CI runs this action against the fixtures in this repository, so the
+action is covered by the same evidence as the tool.
+
 ## Scope
 
 - **Python and pytest only.** Not JavaScript, not Go.

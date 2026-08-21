@@ -23,6 +23,9 @@ DIAGNOSTIC_CODES: dict[str, str] = {
     "W002": "numbered item found with no requirement open, so it cannot be identified",
     "W003": "requirement heading carries no number; ordinal position assigned",
     "E003": "criterion identifier claimed by more than one specification",
+    "C001": "configuration file sets a key kept does not know",
+    "C002": "configuration value is not of the type the key requires",
+    "C004": "configuration file declares a version kept cannot read",
 }
 
 

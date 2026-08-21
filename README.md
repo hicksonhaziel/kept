@@ -28,7 +28,57 @@ own promises as KEPT. That figure was fiction. See
 
 > **This README is a placeholder.** Full documentation is being written. What is here is accurate; it is just not complete.
 
-## Try it
+## Install it in your own project
+
+kept has to be installed into the environment your tests run in, because the
+`@pytest.mark.verifies` marker is registered by a pytest plugin kept ships. So it is
+a dev dependency, not a standalone tool:
+
+```bash
+uv add --dev "kept-cli @ git+https://github.com/hicksonhaziel/kept"
+# or: pip install "kept-cli @ git+https://github.com/hicksonhaziel/kept"
+```
+
+Then, once:
+
+```bash
+kept parse            # the criteria kept can read
+# mark the tests that verify each one: @pytest.mark.verifies("REQ-1.1")
+kept bind --write     # writes .kept/bindings.toml to review and commit
+kept verify --write   # writes .kept/ledger.json and EVIDENCE.md to commit
+```
+
+After that, forever:
+
+```bash
+kept verify
+```
+
+`--root` defaults to the current directory and specifications are discovered from
+`.kiro/specs/*/requirements.md`, so a Kiro project needs no flags at all.
+
+### Configure it once
+
+If your project does need non-default settings, state them in `.kept/config.toml`
+and stop repeating them:
+
+```toml
+version = 1
+spec = ["docs/acceptance.md"]   # projects without .kiro/specs
+source = "myapp"                # what coverage should measure
+tests = "tests/unit"
+gate = "no-regression"
+threshold = 1.0
+cap = 12
+```
+
+Precedence is explicit flag, then this file, then the built-in default. An unknown
+key or a value of the wrong type stops the run with exit 2 rather than being
+ignored: a misspelled `treshold` that quietly did nothing would be worse than a
+refusal. The settings that can change a verdict — `threshold` and `cap` — are still
+recorded in the ledger, so a published number stays reproducible without this file.
+
+## Try it on the bundled fixtures
 
 Requires [uv](https://docs.astral.sh/uv/getting-started/installation/). No API key, no account, no network.
 

@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TextIO
 
-from kept import __version__, attack, bindings, ledger, pipeline, report, verdict
+from kept import __version__, attack, bindings, config, ledger, pipeline, report, verdict
 from kept.diagnostics import Diagnostic
 from kept.ids import SCHEMA_VERSION, display_hash
 from kept.ir import Criterion
@@ -70,7 +70,14 @@ def _add_python_option(command: argparse.ArgumentParser) -> None:
     )
 
 
-def build_parser() -> argparse.ArgumentParser:
+def build_parser(configuration: config.Config | None = None) -> argparse.ArgumentParser:
+    """Build the command surface.
+
+    Args:
+        configuration: Project defaults from `.kept/config.toml`. Applied as
+            argparse defaults, so an explicit flag always wins.
+    """
+    settings = configuration if configuration is not None else config.Config()
     parser = argparse.ArgumentParser(
         prog="kept",
         description=(
@@ -105,7 +112,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit machine-readable JSON with sorted keys",
     )
     parse_command.add_argument("--quiet", action="store_true", help="print only the summary")
-    parse_command.set_defaults(handler=_handle_parse)
+    parse_command.set_defaults(handler=_handle_parse, **settings.defaults_for("parse"))
 
     bind_command = subcommands.add_parser(
         "bind",
@@ -138,7 +145,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="as_json",
         help="emit machine-readable JSON with sorted keys",
     )
-    bind_command.set_defaults(handler=_handle_bind)
+    bind_command.set_defaults(handler=_handle_bind, **settings.defaults_for("bind"))
 
     observe_command = subcommands.add_parser(
         "observe",
@@ -169,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="as_json",
         help="emit machine-readable JSON with sorted keys",
     )
-    observe_command.set_defaults(handler=_handle_observe)
+    observe_command.set_defaults(handler=_handle_observe, **settings.defaults_for("observe"))
 
     attack_command = subcommands.add_parser(
         "attack",
@@ -227,7 +234,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="as_json",
         help="emit machine-readable JSON with sorted keys",
     )
-    attack_command.set_defaults(handler=_handle_attack)
+    attack_command.set_defaults(handler=_handle_attack, **settings.defaults_for("attack"))
 
     verify_command = subcommands.add_parser(
         "verify",
@@ -316,7 +323,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="as_json",
         help="emit machine-readable JSON with sorted keys",
     )
-    verify_command.set_defaults(handler=_handle_verify)
+    verify_command.set_defaults(handler=_handle_verify, **settings.defaults_for("verify"))
 
     prompt_command = subcommands.add_parser(
         "prompt",
@@ -339,7 +346,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="project root holding .kept and the specification (default: current directory)",
     )
     _add_spec_option(prompt_command)
-    prompt_command.set_defaults(handler=_handle_prompt)
+    prompt_command.set_defaults(handler=_handle_prompt, **settings.defaults_for("prompt"))
 
     serve_command = subcommands.add_parser(
         "serve",
@@ -368,7 +375,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_python_option(serve_command)
     _add_spec_option(serve_command)
-    serve_command.set_defaults(handler=_handle_serve)
+    serve_command.set_defaults(handler=_handle_serve, **settings.defaults_for("serve"))
 
     return parser
 
@@ -881,8 +888,30 @@ def _format_diagnostic(diagnostic: Diagnostic) -> str:
     return f"{diagnostic.severity.upper():<7} {diagnostic.code}  {location}{diagnostic.message}"
 
 
+def _peek_root(argv: Sequence[str]) -> Path:
+    """Find --root before argparse runs, because the config lives under it."""
+    arguments = list(argv)
+    for position, argument in enumerate(arguments):
+        if argument == "--root" and position + 1 < len(arguments):
+            return Path(arguments[position + 1])
+        if argument.startswith("--root="):
+            return Path(argument.partition("=")[2])
+    return Path.cwd()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    arguments = list(sys.argv[1:] if argv is None else argv)
+
+    try:
+        configuration = config.load(_peek_root(arguments))
+    except config.ConfigError as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if _report_spec_errors(configuration.errors):
+        return EXIT_USAGE
+
+    args = build_parser(configuration).parse_args(arguments)
     try:
         return int(args.handler(args))
     except KeyboardInterrupt:

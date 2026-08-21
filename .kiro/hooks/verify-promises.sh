@@ -16,9 +16,9 @@ cat >/dev/null # drain the hook event; this hook needs no field from it
 root_directory="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "${root_directory}"
 
-# Which project to verify. Defaults to this repository's demo fixture, because
-# kept's own bindings are not written yet.
-target="${KEPT_HOOK_ROOT:-fixtures/refund_engine}"
+# Which project to verify. Defaults to this one: kept carries its own bindings and
+# its own committed ledger, so it can be held to them like any other project.
+target="${KEPT_HOOK_ROOT:-.}"
 gate="${KEPT_HOOK_GATE:-no-regression}"
 
 if [ ! -d "${target}" ]; then

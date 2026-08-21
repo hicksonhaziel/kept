@@ -8,8 +8,6 @@
 
 [Quickstart](docs/QUICKSTART.md) · [Verdicts](docs/VERDICTS.md) · [Commands](docs/COMMANDS.md) · [CI](docs/CI.md) · [Agents & MCP](docs/AGENTS.md) · [Threat model](docs/THREAT-MODEL.md) · [Public evidence](EVIDENCE.md)
 
-![PyPI](https://img.shields.io/pypi/v/kept-cli?style=flat-square&color=5b5bd6&label=pypi) ![Python](https://img.shields.io/pypi/pyversions/kept-cli?style=flat-square&color=5b5bd6) ![CI](https://img.shields.io/github/actions/workflow/status/hicksonhaziel/kept/ci.yml?style=flat-square&branch=main) ![kept on kept](https://img.shields.io/badge/kept_on_kept-4_kept_·_45_weak-f59e0b?style=flat-square) ![Licence](https://img.shields.io/badge/licence-MIT-3178c6?style=flat-square)
-
 </div>
 
 kept reads your acceptance criteria, binds each one to the tests that claim to verify it, breaks the code those tests guard, and records — per criterion — whether they noticed. Parsing, binding, observation, mutation, and the verdict rules are deterministic Python; no model participates in the verification path.

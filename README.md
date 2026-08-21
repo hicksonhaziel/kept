@@ -26,7 +26,50 @@ were counted as killed without ever running. Before the fix kept reported 26 of 
 own promises as KEPT. That figure was fiction. See
 [the journal](docs/journal/2026-08-21.md).
 
-> **This README is a placeholder.** Full documentation is being written. What is here is accurate; it is just not complete.
+## This is not Kiro's property-based testing
+
+The resemblance is the most obvious objection to the project, so here it is
+directly. Kiro *generates* the oracle. kept *audits and enforces* it.
+
+| | Kiro's correctness features | kept |
+|---|---|---|
+| What it produces | a property-based test for code you point it at | a verdict per acceptance criterion, and the evidence behind it |
+| Where it runs | in the IDE, while you work | in CI, on every commit, and locally |
+| Who writes the oracle | Kiro | you already did; kept never writes one |
+| What it asks | "what property should hold here?" | "would the tests bound to this promise notice if the code broke?" |
+| How it decides | a model proposes the property | mutation of the covered lines, then the criterion's own tests. No model, at any point |
+| What you keep | a test file | a committed, commit-pinned ledger and `EVIDENCE.md` |
+| Failure it catches | missing test cases | tests that pass while the implementation is broken, and criteria nothing verifies |
+
+They compose: Kiro writes the property, kept tells you whether that property
+actually constrains the implementation, and fails the build when it stops doing so.
+kept consumes Kiro's requirement-to-test links as input — the `@verifies` marker is
+how a criterion and a test are connected, whoever wrote the test.
+
+If you already have tests, kept needs no new ones to start. It will tell you which
+of your existing tests are load-bearing and which are decoration.
+
+### And compared with tools that check documentation claims
+
+There is a family of tools that read prose promises — a README, a changelog — and
+exercise the running product against them. That is a different question, and a
+useful one. It asks *does the deployed product still do what the docs say*. kept
+asks *would your test suite notice if it stopped*.
+
+The practical difference is what a reader needs to reproduce the answer: those
+tools need a live target, a browser runner, and usually credentials. kept needs the
+repository. No network, no account, no API key, and the same ledger byte-for-byte
+on any machine.
+
+## Documentation
+
+| | |
+|---|---|
+| [EVIDENCE.md](EVIDENCE.md) | kept's own verdicts, regenerated in CI |
+| [Threat model](docs/threat-model.md) | every way a verdict could be wrong, including two that were |
+| [ADRs](docs/adr/) | the decisions, including the ones that are uncomfortable |
+| [Journal](docs/journal/) | the build log: what went wrong, and how it was found |
+| [Releasing](docs/release.md) | how a version reaches PyPI |
 
 ## Install it in your own project
 

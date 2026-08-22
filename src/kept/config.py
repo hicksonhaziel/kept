@@ -44,7 +44,7 @@ _KEYS: dict[str, tuple[type, str]] = {
 #: Which keys each command understands. Explicit rather than derived from the
 #: parser, so a key silently applying to the wrong command is impossible.
 _BY_COMMAND: dict[str, tuple[str, ...]] = {
-    "parse": (),
+    "parse": ("spec",),
     "bind": ("spec", "tests", "python"),
     "observe": ("spec", "tests", "python", "source"),
     "attack": ("spec", "tests", "python", "source", "cap", "workers", "timeout"),

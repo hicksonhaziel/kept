@@ -13,7 +13,7 @@ from kept import __version__, attack, bindings, config, ledger, pipeline, report
 from kept.diagnostics import Diagnostic
 from kept.ids import SCHEMA_VERSION, display_hash
 from kept.ir import Criterion
-from kept.loader import LoadResult, SpecNotFoundError, load, load_all, load_document
+from kept.loader import LoadResult, SpecNotFoundError, load, load_document
 from kept.observe import ObservationError
 
 #: Every failure mode that is the user's input rather than a defect in kept.
@@ -112,6 +112,7 @@ def build_parser(configuration: config.Config | None = None) -> argparse.Argumen
         help="emit machine-readable JSON with sorted keys",
     )
     parse_command.add_argument("--quiet", action="store_true", help="print only the summary")
+    _add_spec_option(parse_command)
     parse_command.set_defaults(handler=_handle_parse, **settings.defaults_for("parse"))
 
     bind_command = subcommands.add_parser(
@@ -382,11 +383,10 @@ def build_parser(configuration: config.Config | None = None) -> argparse.Argumen
 
 def _handle_parse(args: argparse.Namespace) -> int:
     try:
-        result = (
-            load_document(args.path, root=args.root)
-            if args.path is not None
-            else load_all(args.root)
-        )
+        if args.path is not None:
+            result = load_document(args.path, root=args.root)
+        else:
+            result = load(args.root, specs=args.specs)
     except SpecNotFoundError as error:
         print(f"kept: {error}", file=sys.stderr)
         return EXIT_USAGE
@@ -916,6 +916,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         return int(args.handler(args))
     except KeyboardInterrupt:
         print("kept: interrupted", file=sys.stderr)
+        return EXIT_INTERNAL
+    except Exception as error:
+        # Exit 3 is the documented contract for an internal error, and it promises
+        # no ledger was written. A traceback on stdout would break both.
+        print(f"kept: internal error: {type(error).__name__}: {error}", file=sys.stderr)
+        print(
+            "kept: no ledger was written. Please report this with the command you ran.",
+            file=sys.stderr,
+        )
         return EXIT_INTERNAL
 
 

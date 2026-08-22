@@ -48,9 +48,30 @@ def resolve_interpreter(root: Path, explicit: str | Path | None = None) -> Path:
     3. `.venv` in the project root
     4. `.venv` in the nearest ancestor directory that has one
     5. the interpreter running kept, as a last resort
+
+    The result is always absolute. A relative path would resolve against whatever
+    directory the caller happens to be in, and the mutation stage runs from a
+    temporary worktree, where `.venv/bin/python` means nothing.
     """
     if explicit is not None:
-        return Path(explicit)
+        candidate = Path(explicit)
+        if not candidate.is_absolute():
+            # Interpret against the project root first, then the caller's own
+            # directory, so both `--python .venv/bin/python` and a path the user
+            # can see in their shell work.
+            for base in (root, Path.cwd()):
+                resolved_candidate = (base / candidate).resolve()
+                if resolved_candidate.exists():
+                    return resolved_candidate
+        elif candidate.exists():
+            return candidate
+
+        msg = (
+            f"no interpreter at {explicit}. Give --python a path to the python "
+            f"executable inside your project's virtual environment, for example "
+            f"{root / '.venv' / 'bin' / 'python'}"
+        )
+        raise ObservationError(msg)
 
     activated = os.environ.get("VIRTUAL_ENV")
     if activated:
@@ -190,6 +211,11 @@ def run_tests(
             )
         except subprocess.TimeoutExpired:
             return TestRun(report=Report(), timed_out=True, exit_code=-1)
+        except OSError as error:
+            # A missing or unexecutable interpreter is the user's environment, not
+            # a defect in kept, so it must not surface as a traceback.
+            msg = f"could not run {command[0]}: {error}"
+            raise ObservationError(msg) from error
 
         if not destination.is_file():
             return TestRun(report=Report(), exit_code=completed.returncode)
@@ -279,6 +305,13 @@ def _invoke(
         if expect_report and not destination.is_file():
             raise ObservationError(_failure_message(root, interpreter, completed, output))
 
+        # pytest: 2 interrupted (a collection error), 3 internal, 4 usage, 5 no
+        # tests. Test *failures* are exit 1 and expected — they become BROKEN
+        # verdicts. The rest mean the suite never ran, and proceeding would report
+        # every oracle as notrun, which reads like a verdict about the tests.
+        if completed.returncode in _SUITE_DID_NOT_RUN:
+            raise ObservationError(_did_not_run_message(root, completed.returncode, output))
+
         payload = json.loads(destination.read_text(encoding="utf-8"))
 
     return RunResult(
@@ -286,6 +319,29 @@ def _invoke(
         coverage=CoverageResult(),
         exit_code=completed.returncode,
         output=output,
+    )
+
+
+#: pytest exit codes that mean the suite never ran, so there is nothing to observe.
+_SUITE_DID_NOT_RUN = frozenset({2, 3, 4, 5})
+
+_DID_NOT_RUN_CAUSE = {
+    2: "collection was interrupted, usually an import error in a test module",
+    3: "pytest reported an internal error",
+    4: "the pytest command line was rejected",
+    5: "no tests were collected",
+}
+
+
+def _did_not_run_message(root: Path, code: int, output: str) -> str:
+    trimmed = output.strip()
+    tail = "\n\n" + "\n".join(trimmed.splitlines()[-12:]) if trimmed else ""
+    return (
+        f"the test suite in {root} did not run: {_DID_NOT_RUN_CAUSE.get(code, 'unknown')} "
+        f"(pytest exit {code}). Fix the suite so `pytest` runs on its own, then try "
+        f"again. kept reports no verdict rather than reporting every promise as "
+        f"unverified, which would misattribute a broken environment to your tests."
+        f"{tail}"
     )
 
 

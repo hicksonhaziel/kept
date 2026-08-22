@@ -8,6 +8,7 @@ absent, never a judgement about whether an assertion is any good.
 from __future__ import annotations
 
 import ast
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -47,6 +48,21 @@ def scan_source(source: str, *, path: str) -> dict[str, OracleShape]:
         shape = _shape_of(node, qualname)
         shapes[f"{path}::{qualname.replace('.', '::')}"] = shape
     return shapes
+
+
+def shape_for(shapes: Mapping[str, OracleShape], nodeid: str) -> OracleShape | None:
+    """Find the shape of an oracle, parametrised or not.
+
+    A parametrised test's node ID carries its parameters — `test_it[asyncio]` —
+    while the source defines one function. Looking up the raw node ID finds
+    nothing, and an oracle whose shape cannot be found is treated as asserting
+    nothing, so every parametrised oracle in a project was reported vacuous.
+    """
+    found = shapes.get(nodeid)
+    if found is not None:
+        return found
+    base, bracket, _ = nodeid.partition("[")
+    return shapes.get(base) if bracket else None
 
 
 def scan_files(root: Path, relative_paths: set[str]) -> dict[str, OracleShape]:

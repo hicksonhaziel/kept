@@ -9,7 +9,7 @@ from typing import Any
 
 from kept.bindings import BindingSet
 from kept.observe.runner import Report, TestRecord
-from kept.observe.vacuity import OracleShape
+from kept.observe.vacuity import OracleShape, shape_for
 
 
 class OracleStatus(StrEnum):
@@ -142,7 +142,8 @@ def build(
 
         oracles = tuple(
             _observe_oracle(nodeid, records, coverage, shapes, test_files)
-            for nodeid in bindings.oracles_for(criterion)
+            for bound in bindings.oracles_for(criterion)
+            for nodeid in _resolve(bound, records)
         )
 
         observations.append(
@@ -154,6 +155,20 @@ def build(
         )
 
     return ObservationSet(criteria=tuple(observations))
+
+
+def _resolve(bound: str, records: Mapping[str, TestRecord]) -> tuple[str, ...]:
+    """Expand a bound node ID to the tests it names.
+
+    A bare node ID covers every parametrisation of that test, which is what
+    `pytest path::test_it` already means. Without this, binding a parametrised
+    test required naming each variant, and naming the function reported the
+    oracle as missing. See docs/adr/0007.
+    """
+    if bound in records:
+        return (bound,)
+    variants = tuple(sorted(n for n in records if n.startswith(f"{bound}[")))
+    return variants or (bound,)
 
 
 def _observe_oracle(
@@ -172,7 +187,7 @@ def _observe_oracle(
             has_assertion=False,
         )
 
-    shape = shapes.get(nodeid)
+    shape = shape_for(shapes, nodeid)
     covered: tuple[tuple[str, tuple[int, ...]], ...] = ()
     if record.context is not None:
         per_file = coverage.get(record.context, {})

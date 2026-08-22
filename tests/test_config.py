@@ -63,7 +63,10 @@ def test_a_key_reaches_only_the_commands_that_understand_it(tmp_path: Path) -> N
     assert "threshold" in loaded.defaults_for("verify")
     assert "threshold" not in loaded.defaults_for("observe")
     assert "specs" in loaded.defaults_for("prompt")
-    assert loaded.defaults_for("parse") == {}
+    # parse takes --spec like every other command, but nothing that could move a
+    # verdict, because it reaches none.
+    assert "specs" in loaded.defaults_for("parse")
+    assert "threshold" not in loaded.defaults_for("parse")
 
 
 def test_a_misspelled_key_is_an_error_rather_than_a_silent_no_op(tmp_path: Path) -> None:

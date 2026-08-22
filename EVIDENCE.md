@@ -2,7 +2,7 @@
 
 **51 promises · 4 kept · 45 weak · 2 unproven**
 
-Commit `528e1e2aa8c596e446f4c2e53654bd718a267dbf`, kept 0.1.0.
+Commit `31066934d439f8da72289f4c9cba550d7e3599ab`, kept 0.1.0.
 
 Produced by `kept verify`. This is **evidence, not proof**: mutation survival is a strong negative signal, but a killed mutant is not a guarantee of correctness.
 
@@ -32,8 +32,8 @@ Settings: threshold 1.0, cap 12 mutants per promise.
 | REQ-2.10 | weak | 8/12 | 2 | 4 of 12 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-2.11 | weak | 10/12 | 4 | 2 of 12 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-2.12 | weak | 9/12 | 1 | 3 of 12 detectable breakages went unnoticed by this promise's own oracles |
-| REQ-2.13 | weak | 7/9 | 1 | 2 of 9 detectable breakages went unnoticed by this promise's own oracles |
-| REQ-2.14 | weak | 9/12 | 2 | 3 of 12 detectable breakages went unnoticed by this promise's own oracles |
+| REQ-2.13 | weak | 6/9 | 1 | 3 of 9 detectable breakages went unnoticed by this promise's own oracles |
+| REQ-2.14 | weak | 10/12 | 2 | 2 of 12 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-2.15 | weak | 8/12 | 4 | 4 of 12 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-3.1 | weak | 8/11 | 5 | 3 of 11 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-3.2 | kept | 8/8 | 1 |  |
@@ -52,8 +52,8 @@ Settings: threshold 1.0, cap 12 mutants per promise.
 | REQ-4.8 | kept | 9/9 | 3 |  |
 | REQ-4.9 | weak | 7/9 | 3 | 2 of 9 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-5.1 | weak | 7/9 | 2 | 2 of 9 detectable breakages went unnoticed by this promise's own oracles |
-| REQ-5.2 | weak | 7/9 | 2 | 2 of 9 detectable breakages went unnoticed by this promise's own oracles |
-| REQ-5.3 | weak | 8/12 | 1 | 4 of 12 detectable breakages went unnoticed by this promise's own oracles |
+| REQ-5.2 | weak | 6/9 | 2 | 3 of 9 detectable breakages went unnoticed by this promise's own oracles |
+| REQ-5.3 | weak | 9/12 | 1 | 3 of 12 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-5.4 | weak | 8/9 | 3 | 1 of 9 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-5.5 | weak | 8/12 | 1 | 4 of 12 detectable breakages went unnoticed by this promise's own oracles |
 | REQ-5.6 | unproven | n/a | 0 | no oracle claims to verify this promise |
@@ -97,7 +97,7 @@ Each line below is a change to the implementation that this promise's own oracle
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-1.5
 
@@ -117,92 +117,92 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.2
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.3
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.4
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.5
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.6
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.7
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.8
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.9
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.10
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.11
 
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.12
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-2.13
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
+- `tests/conftest.py:39` 1 to 0 — caught by REQ-2.14, REQ-5.3, REQ-5.5
 
 ### REQ-2.14
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
 
 ### REQ-2.15
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 - `src/kept/loader.py:47` return None instead — caught by REQ-6.2, REQ-6.3
 
 ### REQ-3.1
@@ -215,25 +215,25 @@ Each line below is a change to the implementation that this promise's own oracle
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-3.4
 
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-3.6
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-3.7
 
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
 - `src/kept/ids.py:35` return None instead — caught by REQ-3.2
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-4.1
 
@@ -241,7 +241,7 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 - `src/kept/loader.py:47` return None instead — caught by REQ-6.2, REQ-6.3
 
 ### REQ-4.2
@@ -250,7 +250,7 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 - `src/kept/loader.py:47` return None instead — caught by REQ-6.2, REQ-6.3
 
 ### REQ-4.3
@@ -268,7 +268,7 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-4.6
 
@@ -276,7 +276,7 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-4.7
 
@@ -284,7 +284,7 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 - `src/kept/loader.py:47` return None instead — caught by REQ-6.2, REQ-6.3
 
 ### REQ-4.9
@@ -301,13 +301,13 @@ Each line below is a change to the implementation that this promise's own oracle
 
 - `src/kept/ears/lexer.py:25` 0 to 1 — caught by REQ-1.1, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.8, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-3.4, REQ-5.3, REQ-5.4
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
+- `tests/conftest.py:39` 1 to 0 — caught by REQ-2.14, REQ-5.3, REQ-5.5
 
 ### REQ-5.3
 
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
 
 ### REQ-5.4
 
@@ -326,7 +326,7 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 - `src/kept/loader.py:47` return None instead — caught by REQ-6.2, REQ-6.3
 
 ### REQ-6.2
@@ -341,46 +341,25 @@ Each line below is a change to the implementation that this promise's own oracle
 - `src/kept/ears/lexer.py:31` condition forced to True — caught by REQ-1.1, REQ-1.2, REQ-1.4, REQ-1.5, REQ-1.6, REQ-1.7, REQ-1.8, REQ-2.1, REQ-2.10, REQ-2.11, REQ-2.12, REQ-2.14, REQ-2.15, REQ-2.2, REQ-2.3, REQ-2.4, REQ-2.5, REQ-2.6, REQ-2.7, REQ-2.8, REQ-2.9, REQ-3.1, REQ-3.3, REQ-3.4, REQ-3.6, REQ-4.5, REQ-5.1, REQ-5.4, REQ-5.5, REQ-6.2
 - `src/kept/ears/lexer.py:40` == to != — caught by REQ-1.8, REQ-2.11
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-6.5
 
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
 - `src/kept/ids.py:35` return None instead — caught by REQ-3.2
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ### REQ-6.6
 
 - `src/kept/ids.py:22` return None instead — caught by REQ-3.3, REQ-3.5, REQ-3.6
 - `src/kept/ids.py:35` return None instead — caught by REQ-3.2
-- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-5.5, REQ-6.2
-
-## Unpinned lines
-
-Breakages that **no** bound oracle noticed. These are charged to the suite rather than to any one promise: if nothing detects them, blaming a single promise would be misattribution.
-
-| Location | Breakage | Covered by |
-|---|---|---|
-| `src/kept/ears/errors.py:12` | body of _quote replaced by return None | 5 promises |
-| `src/kept/ears/errors.py:13` | <= to < | 5 promises |
-| `src/kept/ears/errors.py:14` | return None instead | 5 promises |
-| `src/kept/ears/lexer.py:36` | + to - | 7 promises |
-| `src/kept/ids.py:32` | condition forced to False | 1 promises |
-| `src/kept/ids.py:32` | 1 to 0 | 1 promises |
-| `src/kept/ids.py:40` | condition forced to False | 1 promises |
-| `src/kept/ids.py:40` | 1 to 0 | 1 promises |
-| `src/kept/ir.py:66` | return None instead | 4 promises |
-| `src/kept/ir.py:71` | condition forced to True | 3 promises |
-| `src/kept/ir.py:73` | == to != | 3 promises |
-| `src/kept/ir.py:94` | < to <= | 7 promises |
-| `src/kept/markdown.py:118` | 0 to 1 | 4 promises |
-| `src/kept/markdown.py:119` | True to False | 4 promises |
+- `src/kept/ids.py:43` return None instead — caught by REQ-3.2, REQ-6.2
 
 ## Sources judged
 
 | File | SHA-256 |
 |---|---|
-| `src/kept/diagnostics.py` | `8f7633e05730` |
+| `src/kept/diagnostics.py` | `80d3df1b0dd2` |
 | `src/kept/ears/errors.py` | `6ffaa7e9ba01` |
 | `src/kept/ears/lexer.py` | `0ef8f098e095` |
 | `src/kept/ears/parser.py` | `b4925255fb92` |

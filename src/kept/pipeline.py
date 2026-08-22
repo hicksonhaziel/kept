@@ -6,6 +6,7 @@ only decides what to call and in what order.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,6 +21,7 @@ from kept.diagnostics import Diagnostic
 from kept.ir import Criterion
 from kept.loader import load as load_specs
 from kept.observe import Report, collect, resolve_interpreter, run, scan_files
+from kept.report import html as html_report
 
 
 @dataclass(frozen=True, slots=True)
@@ -271,6 +273,72 @@ def verify(
         ),
         regressions=(ledger_module.regressions(stored, fresh) if stored is not None else ()),
     )
+
+
+def mutation_diffs(
+    root: Path, stored: ledger_module.Ledger
+) -> dict[tuple[str, int, str, str], html_report.MutationDiff]:
+    """Recompute the line each recorded mutant changed, for the HTML report.
+
+    The ledger records what changed and where, not the text: storing source lines
+    would put a copy of the code in an artefact that already records its hash. So
+    the mutation is regenerated from the file — deterministically, by the same
+    operators — and only when the file still hashes to what the ledger judged. A
+    source that has moved gets no diff rather than a plausible one.
+    """
+    recorded = dict(stored.sources)
+    wanted: dict[str, list[tuple[str, int, str, str]]] = {}
+    for ruling in stored.rulings:
+        for missed in ruling.evidence.missed:
+            key = (missed.path, missed.line, missed.operator, missed.description)
+            wanted.setdefault(missed.path, []).append(key)
+
+    diffs: dict[tuple[str, int, str, str], html_report.MutationDiff] = {}
+
+    for path, keys in wanted.items():
+        candidate = root / path
+        source = candidate.read_text(encoding="utf-8") if candidate.is_file() else None
+        digest = hashlib.sha256(candidate.read_bytes()).hexdigest() if candidate.is_file() else None
+        fresh = source is not None and digest == recorded.get(path)
+
+        if not fresh:
+            for key in keys:
+                diffs[key] = html_report.MutationDiff(*key, stale=True)
+            continue
+
+        assert source is not None
+        original = source.splitlines()
+        try:
+            mutations = attack.collect(source)
+        except Exception:
+            mutations = ()
+
+        index_of = {
+            (mutation.line, mutation.operator, mutation.description): position
+            for position, mutation in reversed(list(enumerate(mutations)))
+        }
+
+        for key in keys:
+            _, line, operator, description = key
+            position = index_of.get((line, operator, description))
+            if position is None:
+                diffs[key] = html_report.MutationDiff(*key, stale=True)
+                continue
+            try:
+                mutated = attack.apply(source, position).splitlines()
+            except Exception:
+                diffs[key] = html_report.MutationDiff(*key, stale=True)
+                continue
+            if not (0 < line <= len(original) and line <= len(mutated)):
+                diffs[key] = html_report.MutationDiff(*key, stale=True)
+                continue
+            diffs[key] = html_report.MutationDiff(
+                *key,
+                before=original[line - 1].rstrip(),
+                after=mutated[line - 1].rstrip(),
+            )
+
+    return diffs
 
 
 def _binding(criterion: str, oracles: tuple[str, ...]) -> Binding:

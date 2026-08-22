@@ -1,5 +1,5 @@
 {
-  "commit": "528e1e2aa8c596e446f4c2e53654bd718a267dbf",
+  "commit": "31066934d439f8da72289f4c9cba550d7e3599ab",
   "criteria": [
     {
       "content_hash": "8a9babd6be9fb0d3f11fdddf1dd2b7f2375b5e2a0553ed7f373eed1fb496c835",
@@ -465,7 +465,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -640,7 +639,7 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39
+            42
           ],
           "src/kept/ears/errors.py": [
             12,
@@ -1033,7 +1032,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -1219,7 +1217,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -1401,7 +1398,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -1583,7 +1579,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -1765,7 +1760,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -1951,7 +1945,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -2139,7 +2132,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -2335,7 +2327,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -2536,7 +2527,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -2729,7 +2719,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -2924,7 +2913,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -3118,7 +3106,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -3150,8 +3137,8 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39,
-            45
+            42,
+            48
           ],
           "src/kept/ears/errors.py": [
             12,
@@ -3304,11 +3291,22 @@
             "line": 31,
             "operator": "guard",
             "path": "src/kept/ears/lexer.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.14",
+              "REQ-5.3",
+              "REQ-5.5"
+            ],
+            "description": "1 to 0",
+            "line": 39,
+            "operator": "literal",
+            "path": "tests/conftest.py"
           }
         ],
         "mutants": {
           "discriminating": 9,
-          "killed": 7,
+          "killed": 6,
           "probed": 12,
           "unpinned": 3
         },
@@ -3318,9 +3316,9 @@
             "status": "passed"
           }
         ],
-        "score": 0.7777777777777778
+        "score": 0.6666666666666666
       },
-      "reason": "2 of 9 detectable breakages went unnoticed by this promise's own oracles",
+      "reason": "3 of 9 detectable breakages went unnoticed by this promise's own oracles",
       "verdict": "weak"
     },
     {
@@ -3329,7 +3327,7 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39
+            42
           ],
           "src/kept/ears/errors.py": [
             32,
@@ -3474,22 +3472,11 @@
             "line": 22,
             "operator": "return",
             "path": "src/kept/ids.py"
-          },
-          {
-            "caught_by": [
-              "REQ-3.2",
-              "REQ-5.5",
-              "REQ-6.2"
-            ],
-            "description": "return None instead",
-            "line": 43,
-            "operator": "return",
-            "path": "src/kept/ids.py"
           }
         ],
         "mutants": {
           "discriminating": 12,
-          "killed": 9,
+          "killed": 10,
           "probed": 12,
           "unpinned": 0
         },
@@ -3503,9 +3490,9 @@
             "status": "passed"
           }
         ],
-        "score": 0.75
+        "score": 0.8333333333333334
       },
-      "reason": "3 of 12 detectable breakages went unnoticed by this promise's own oracles",
+      "reason": "2 of 12 detectable breakages went unnoticed by this promise's own oracles",
       "verdict": "weak"
     },
     {
@@ -3797,7 +3784,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -4387,7 +4373,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -4581,7 +4566,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -4797,7 +4781,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -4929,7 +4912,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -5339,7 +5321,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -5730,7 +5711,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -6330,7 +6310,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -6770,7 +6749,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -7160,7 +7138,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -7210,7 +7187,7 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39
+            42
           ],
           "src/kept/ir.py": [
             91,
@@ -7504,11 +7481,11 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39,
-            45,
-            58,
-            59,
-            61
+            42,
+            48,
+            61,
+            62,
+            64
           ],
           "src/kept/ears/errors.py": [
             12,
@@ -7862,8 +7839,8 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39,
-            45
+            42,
+            48
           ],
           "src/kept/ears/errors.py": [
             12,
@@ -8068,11 +8045,22 @@
             "line": 31,
             "operator": "guard",
             "path": "src/kept/ears/lexer.py"
+          },
+          {
+            "caught_by": [
+              "REQ-2.14",
+              "REQ-5.3",
+              "REQ-5.5"
+            ],
+            "description": "1 to 0",
+            "line": 39,
+            "operator": "literal",
+            "path": "tests/conftest.py"
           }
         ],
         "mutants": {
           "discriminating": 9,
-          "killed": 7,
+          "killed": 6,
           "probed": 12,
           "unpinned": 3
         },
@@ -8086,9 +8074,9 @@
             "status": "passed"
           }
         ],
-        "score": 0.7777777777777778
+        "score": 0.6666666666666666
       },
-      "reason": "2 of 9 detectable breakages went unnoticed by this promise's own oracles",
+      "reason": "3 of 9 detectable breakages went unnoticed by this promise's own oracles",
       "verdict": "weak"
     },
     {
@@ -8097,7 +8085,7 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39
+            42
           ],
           "src/kept/ears/errors.py": [
             32,
@@ -8280,22 +8268,11 @@
             "line": 22,
             "operator": "return",
             "path": "src/kept/ids.py"
-          },
-          {
-            "caught_by": [
-              "REQ-3.2",
-              "REQ-5.5",
-              "REQ-6.2"
-            ],
-            "description": "return None instead",
-            "line": 43,
-            "operator": "return",
-            "path": "src/kept/ids.py"
           }
         ],
         "mutants": {
           "discriminating": 12,
-          "killed": 8,
+          "killed": 9,
           "probed": 12,
           "unpinned": 0
         },
@@ -8305,9 +8282,9 @@
             "status": "passed"
           }
         ],
-        "score": 0.6666666666666666
+        "score": 0.75
       },
-      "reason": "4 of 12 detectable breakages went unnoticed by this promise's own oracles",
+      "reason": "3 of 12 detectable breakages went unnoticed by this promise's own oracles",
       "verdict": "weak"
     },
     {
@@ -8316,7 +8293,7 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39
+            42
           ],
           "src/kept/ears/errors.py": [
             12,
@@ -8603,7 +8580,7 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39
+            42
           ],
           "src/kept/ears/errors.py": [
             32,
@@ -9242,7 +9219,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -9296,10 +9272,10 @@
       "evidence": {
         "covered": {
           "src/kept/diagnostics.py": [
-            39,
-            58,
-            59,
-            61
+            42,
+            61,
+            62,
+            64
           ],
           "src/kept/ears/lexer.py": [
             24,
@@ -10047,7 +10023,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -10197,7 +10172,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -10321,7 +10295,6 @@
           {
             "caught_by": [
               "REQ-3.2",
-              "REQ-5.5",
               "REQ-6.2"
             ],
             "description": "return None instead",
@@ -10357,7 +10330,7 @@
     "threshold": 1.0
   },
   "sources": {
-    "src/kept/diagnostics.py": "8f7633e057300dcc2d6de8e7d440dcf2329c90e48b13ae9d850621bba7c2fdbf",
+    "src/kept/diagnostics.py": "80d3df1b0dd24c8217369c065f09669b845eb939c072f729991a2e3dd7a20c1f",
     "src/kept/ears/errors.py": "6ffaa7e9ba01bea9f9fa542e7409717af329a5b2907e2461c6856266a946cd33",
     "src/kept/ears/lexer.py": "0ef8f098e0959877742a9790518378bd6cdac205fc772a15ceb864f8aabd1fab",
     "src/kept/ears/parser.py": "b4925255fb92938dc5620a33585b13427a79920f03fd754179f6e6a70e31f36b",

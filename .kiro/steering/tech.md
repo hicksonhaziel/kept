@@ -47,11 +47,17 @@ implementation choices directly:
 ```
 kept parse     # show parsed criteria and IDs (diagnostic)
 kept bind      # inspect and validate bindings
+kept observe   # per-criterion coverage: which lines each promise's tests execute
+kept attack    # mutate those lines and report which oracles fail to notice
 kept verify    # the main event: produce verdicts and write the ledger
 kept report    # render EVIDENCE.md, badge, HTML evidence map
 kept prompt    # emit a remediation brief for one criterion
-kept demo      # run the whole story on the bundled fixture, offline
 kept serve     # MCP server (optional extra)
+
+# Not implemented, and not to be described as if it were: `kept demo`. The bundled
+# fixtures are driven with ordinary `kept verify --root fixtures/...`, which is the
+# same command a user runs, so a separate demo path would be a second code path
+# shown to judges and never exercised by anyone else.
 ```
 
 `kept verify` exit codes are a contract, not an implementation detail:

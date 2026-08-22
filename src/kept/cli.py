@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TextIO
@@ -348,6 +349,37 @@ def build_parser(configuration: config.Config | None = None) -> argparse.Argumen
     )
     _add_spec_option(prompt_command)
     prompt_command.set_defaults(handler=_handle_prompt, **settings.defaults_for("prompt"))
+
+    report_command = subcommands.add_parser(
+        "report",
+        help="render the committed ledger as EVIDENCE.md, a badge, and an HTML evidence map",
+        description=(
+            "Render what the ledger already records. Runs no tests, reaches no "
+            "verdict, and changes nothing: this is the same evidence `kept verify "
+            "--write` produces, rendered again from the committed artefact."
+        ),
+    )
+    report_command.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="project root holding .kept (default: current directory)",
+    )
+    _add_spec_option(report_command)
+    report_command.add_argument(
+        "--html",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help="where to write the evidence map (default: .kept/report.html)",
+    )
+    report_command.add_argument(
+        "--open",
+        action="store_true",
+        dest="open_browser",
+        help="open the evidence map in your browser when it is written",
+    )
+    report_command.set_defaults(handler=_handle_report, **settings.defaults_for("report"))
 
     serve_command = subcommands.add_parser(
         "serve",
@@ -744,6 +776,66 @@ def _handle_prompt(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _handle_report(args: argparse.Namespace) -> int:
+    path = ledger.ledger_path(args.root)
+    try:
+        stored = ledger.load(path)
+    except ledger.LedgerError as error:
+        print(f"kept: {error}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if stored is None:
+        print(
+            f"kept: no ledger at {path}. Run `kept verify --write` first: report "
+            f"renders recorded evidence and produces none of its own.",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
+
+    texts = {
+        criterion.id: criterion.text
+        for criterion in _criteria_of(args)
+        if criterion.id in {ruling.criterion for ruling in stored.rulings}
+    }
+    diffs = pipeline.mutation_diffs(args.root, stored)
+
+    html_path = args.html if args.html is not None else args.root / ".kept" / "report.html"
+    html_path.parent.mkdir(parents=True, exist_ok=True)
+    html_path.write_text(report.render_html(stored, texts=texts, diffs=diffs), encoding="utf-8")
+
+    evidence_path = args.root / "EVIDENCE.md"
+    evidence_path.write_text(report.render_evidence(stored), encoding="utf-8")
+
+    badge_path = args.root / ".kept" / "badge.svg"
+    badge_path.write_text(report.render_badge(stored), encoding="utf-8")
+
+    written = [str(html_path), str(evidence_path), str(badge_path)]
+    stale = sum(1 for diff in diffs.values() if diff.stale)
+
+    write = sys.stdout.write
+    write(f"\n{stored.headline()}\n")
+    write("\nwrote " + ", ".join(written) + "\n")
+    if stale:
+        write(
+            f"\n{stale} of {len(diffs)} recorded breakages could not be shown as a diff: "
+            f"the source has changed since the ledger was written. Run `kept verify "
+            f"--write` to refresh it.\n"
+        )
+
+    if args.open_browser:
+        webbrowser.open(html_path.resolve().as_uri())
+
+    return EXIT_OK
+
+
+def _criteria_of(args: argparse.Namespace) -> tuple[Criterion, ...]:
+    """Parsed criteria, or nothing. Wording is a nicety; its absence is not fatal."""
+    try:
+        return load(args.root, specs=args.specs).criteria
+    except (SpecNotFoundError, OSError):
+        return ()
+
+
 def _handle_serve(args: argparse.Namespace) -> int:
     from kept import serve as serve_module
 
@@ -768,11 +860,7 @@ def _criterion_text(args: argparse.Namespace) -> Criterion | None:
     Absence is not fatal. A brief built only from the ledger is still honest; it
     just cannot show the wording.
     """
-    try:
-        result = load(args.root, specs=args.specs)
-    except (SpecNotFoundError, OSError):
-        return None
-    for criterion in result.criteria:
+    for criterion in _criteria_of(args):
         if criterion.id == args.criterion:
             return criterion
     return None

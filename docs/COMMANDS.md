@@ -12,6 +12,7 @@ defaults to the working directory and specifications are discovered from
 | `kept attack` | mutates those lines and reports which oracles fail to notice | no — facts only |
 | `kept verify` | the whole pipeline, one verdict per promise, writes the ledger | **yes** |
 | `kept prompt` | a remediation brief for one promise, rendered from the ledger | no |
+| `kept report` | renders the ledger as `EVIDENCE.md`, a badge, and an HTML evidence map | no |
 | `kept serve` | MCP server over stdio for an agent | only through `verify` |
 
 The pipeline is `parse → bind → observe → attack → rule`. The first four commands
@@ -74,6 +75,27 @@ kept prompt REQ-1.1
 
 Reads the committed ledger. Runs no tests, reaches no verdict, consults no model.
 Says so in its own output, because a brief travels away from the tool that made it.
+
+## kept report
+
+```bash
+kept report [--html PATH] [--open]
+```
+
+Renders what the ledger already records — no tests, no verdict, nothing changed.
+Writes `EVIDENCE.md`, `.kept/badge.svg`, and `.kept/report.html`.
+
+The evidence map is one self-contained file: no CDN font, no external stylesheet, no
+script pointing anywhere. kept claims to work offline, and a report that fetched a
+typeface would break that claim the first time someone opened it on a plane.
+
+Each breakage a promise missed is shown as a diff of the exact line, red for what
+was there and green for what kept put in its place. Those lines are **recomputed**
+from the source by the same operators, then checked against the content hash the
+ledger recorded: a file that has changed since gets no diff rather than a plausible
+one.
+
+`--open` opens the file in your browser. `/` focuses the filter, `Escape` clears it.
 
 ## kept serve
 

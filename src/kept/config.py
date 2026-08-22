@@ -61,6 +61,7 @@ _BY_COMMAND: dict[str, tuple[str, ...]] = {
         "show_unpinned",
     ),
     "prompt": ("spec",),
+    "report": ("spec",),
     "serve": ("spec", "tests", "python", "source"),
 }
 

@@ -60,7 +60,7 @@ $ kept verify
    └── rule ───────── pure function: evidence → verdict
                           │
                           ▼
-              .kept/ledger.json · EVIDENCE.md · badge
+              .kept/ledger.json · EVIDENCE.md · badge · report.html
 ```
 
 `parse`, `bind` and `rule` are pure. `observe` and `attack` are adapters at the edge. The rule engine is unit-tested with hand-built evidence and no I/O, because a verdict you cannot test without running a suite is a verdict you cannot trust. See [Commands](docs/COMMANDS.md) for the stage-by-stage surface.
@@ -80,6 +80,7 @@ Then, once:
 kept parse            # which criteria kept can read
 kept bind --write     # after marking tests; writes .kept/bindings.toml to review
 kept verify --write   # writes .kept/ledger.json and EVIDENCE.md to commit
+kept report --open    # the same evidence as a self-contained HTML map
 ```
 
 After that, forever: `kept verify`. In a Kiro project no flags are needed — `--root` defaults to the working directory and specs are discovered. Anything else belongs in [`.kept/config.toml`](docs/CONFIGURATION.md).
@@ -116,6 +117,7 @@ Pointing kept at itself for the first time also found two defects in its own ver
 | [Commands](docs/COMMANDS.md) | every command and flag, and the exit-code contract |
 | [Configuration](docs/CONFIGURATION.md) | `.kept/config.toml`, so `kept verify` stays the whole command |
 | [CI](docs/CI.md) | the action, the four gates, runtime |
+| [Report](docs/COMMANDS.md#kept-report) | the HTML evidence map, with per-mutant diffs |
 | [Agents & MCP](docs/AGENTS.md) | `kept serve`, the four tools, Kiro hooks |
 | [Comparison](docs/COMPARISON.md) | why this is not Kiro's property-based testing |
 | [Threat model](docs/THREAT-MODEL.md) | every way a verdict could be wrong, including two that were |

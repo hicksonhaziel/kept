@@ -99,6 +99,9 @@ ignore = [
 "tests/**" = ["ANN201", "ANN001"]
 # Fixtures are intentionally imperfect code under audit; do not lint them.
 "fixtures/**" = ["ALL"]
+# The HTML report is a template: its CSS and markup lines are long because
+# wrapping them would make the output harder to read than the source.
+"src/kept/report/html.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"
